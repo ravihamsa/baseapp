@@ -1,0 +1,16 @@
+({
+    baseUrl: '../js',
+    paths: {
+        jquery: "empty:",
+        underscore: "empty:",
+        backbone: "empty:",
+        text:'plugins/requirejs-text-plugin',
+        libs:'../libs'
+
+    },
+    out:'../dist/list.js',
+    name:'list',
+    fileExclusionRegExp:/base/,
+    exclude:['base'],
+    optimize: 'none'
+})

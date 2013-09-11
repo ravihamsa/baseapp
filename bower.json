@@ -1,0 +1,14 @@
+{
+    "name": "bootstrap",
+    "version": "3.0.0",
+    "main": ["./dist/js/base.js", "./dist/js/widgets.js", "./dist/css/base.css"],
+    "ignore": [
+        "**/.*"
+    ],
+    "dependencies": {
+        "requirejs": "latest",
+        "jquery": "latest",
+        "backbone-amd": "latest",
+        "underscore-amd": "latest"
+    }
+}
