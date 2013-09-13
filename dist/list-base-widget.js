@@ -629,7 +629,7 @@ define('base/view',['base/app', 'base/model', 'base/util'], function (app, BaseM
                 handler.call(this, value);
             }
         }, this);
-        console.log(changes);
+
         var changeHandler = this.changeHandler;
         if (changeHandler && typeof changeHandler === 'function') {
             changeHandler.call(this, changes);
@@ -1348,7 +1348,7 @@ define('widgets/form/validator',['base/app'],function(app){
         validationRuleMethods:validationRuleMethods
     };
 });
-define('text!widgets/form/inputView.html',[],function () { return '<div class="control-group">\n    <label class="control-label">\n        {{label}}\n    </label>\n\n    <div class="controls type-{{type}}">\n        <input type="{{type}}" name="{{name}}" value="{{value}}" class="el-{{name}}"/>\n        <span class="help-inline"></span>\n    </div>\n</div>';});
+define('text!widgets/form/inputView.html',[],function () { return '<div class="control-group">\n    <label class="control-label">\n        {{elementLabel this}}\n    </label>\n\n    <div class="controls type-{{type}}">\n        <input type="{{type}}" name="{{name}}" value="{{value}}" class="el-{{name}}"/>\n        <span class="help-inline"></span>\n    </div>\n</div>';});
 
 /**
  * Created with JetBrains WebStorm.
@@ -1457,6 +1457,21 @@ define('widgets/form/element',['base/app', 'base', 'widgets/form/validator','tex
         //     this.$('input').attr('type', value);
         // },
 
+        postRender:function(){
+            this.syncAttributes();
+        },
+        syncAttributes: function () {
+            var model = this.model;
+            var attr = model.toJSON();
+            _.each(attr, function (value, attribute) {
+                var handler = this[attribute + 'ChangeHandler'];
+                if (handler && typeof handler === 'function') {
+                    handler.call(this, model.get(attribute));
+                }
+            }, this);
+            this.updateValue(true);
+        },
+
         disabledChangeHandler: function (value) {
             this.$el.toggleClass('disabled', value);
             this.$('input').attr('disabled', value);
@@ -1559,13 +1574,13 @@ define('widgets/messageStack',['base', 'text!./messageStack/messageStack.html'],
         Model:MessageStackModel
     };
 });
-define('text!widgets/form/checkListView.html',[],function () { return '<div class="control-group">\n    <label class="control-label">\n        {{label}}\n    </label>\n\n    <div class="controls">\n        {{#each options}}\n        <label class="checkbox inline">\n            <input type="checkbox" name="{{id}}" value="{{id}}" class="el-{{name}}"/>{{name}}\n        </label>\n        {{/each}}\n        <span class="help-inline"></span>\n    </div>\n</div>';});
+define('text!widgets/form/checkListView.html',[],function () { return '<div class="control-group">\n    <label class="control-label">\n        {{elementLabel this}}\n    </label>\n\n    <div class="controls">\n        {{#each options}}\n        <label class="checkbox inline">\n            <input type="checkbox" name="{{id}}" value="{{id}}" class="el-{{name}}"/>{{name}}\n        </label>\n        {{/each}}\n        <span class="help-inline"></span>\n    </div>\n</div>';});
 
-define('text!widgets/form/radioListView.html',[],function () { return '<div class="control-group">\n    <label class="control-label">\n        {{label}}\n    </label>\n\n    <div class="controls">\n        {{#each options}}\n        <label class="radio inline">\n            <input type="radio" name="{{../name}}" value="{{id}}" class="el-{{name}}"/>{{name}}\n        </label>\n        {{/each}}\n        <span class="help-inline"></span>\n    </div>\n</div>';});
+define('text!widgets/form/radioListView.html',[],function () { return '<div class="control-group">\n    <label class="control-label">\n        {{elementLabel this}}\n    </label>\n\n    <div class="controls">\n        {{#each options}}\n        <label class="radio inline">\n            <input type="radio" name="{{../name}}" value="{{id}}" class="el-{{name}}"/>{{name}}\n        </label>\n        {{/each}}\n        <span class="help-inline"></span>\n    </div>\n</div>';});
 
-define('text!widgets/form/selectView.html',[],function () { return '<div class="control-group">\n    <label class="control-label">\n        {{label}}\n    </label>\n\n    <div class="controls">\n        <select name="{{name}}" class="el-{{name}}">\n            {{#each options}}\n            <option value="{{id}}">{{name}}</option>\n            {{/each}}\n        </select>\n        <span class="help-inline"></span>\n    </div>\n</div>';});
+define('text!widgets/form/selectView.html',[],function () { return '<div class="control-group">\n    <label class="control-label">\n        {{elementLabel this}}\n    </label>\n\n    <div class="controls">\n        <select name="{{name}}" class="el-{{name}}">\n            {{#each options}}\n            <option value="{{id}}">{{name}}</option>\n            {{/each}}\n        </select>\n        <span class="help-inline"></span>\n    </div>\n</div>';});
 
-define('text!widgets/form/textAreaView.html',[],function () { return '<div class="control-group">\n    <label class="control-label">\n        {{label}}\n    </label>\n\n    <div class="controls">\n        <textarea type="{{type}}" name="{{name}}" class="el-{{name}}">{{value}}</textarea>\n        <span class="help-inline"></span>\n    </div>\n</div>';});
+define('text!widgets/form/textAreaView.html',[],function () { return '<div class="control-group">\n    <label class="control-label">\n        {{elementLabel this}}\n    </label>\n\n    <div class="controls">\n        <textarea type="{{type}}" name="{{name}}" class="el-{{name}}">{{value}}</textarea>\n        <span class="help-inline"></span>\n    </div>\n</div>';});
 
 define('text!widgets/form/buttonView.html',[],function () { return '<div class="control-group">\n    <div class="controls">\n        <button type="submit" class="btn btn-default">{{value}}</button>\n        <span class="help-inline"></span>\n    </div>\n</div>';});
 
