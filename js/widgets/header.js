@@ -1,6 +1,6 @@
-define(['base', 'text!./header/header.html'],function(Bone, template){
+define(['base/view', 'base/model', 'text!./header/header.html'],function(BaseView, BaseModel, template){
 
-    var HeaderView = Bone.View.extend({
+    var HeaderView = BaseView.extend({
         template:template,
         appIdChangeHandler:function(value){
             this.$('.active').removeClass('active');
@@ -10,6 +10,6 @@ define(['base', 'text!./header/header.html'],function(Bone, template){
 
     return {
         View:HeaderView,
-        Model:Bone.Model
+        Model:BaseModel
     };
 })

@@ -1,4 +1,4 @@
-define(['common/app'],function(app){
+define(['./app'],function(app){
 
     Handlebars.registerHelper('elementLabel', function(element) {
         return element.name;

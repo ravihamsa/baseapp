@@ -629,7 +629,7 @@ define('base/view',['base/app', 'base/model', 'base/util'], function (app, BaseM
                 handler.call(this, value);
             }
         }, this);
-
+        console.log(changes);
         var changeHandler = this.changeHandler;
         if (changeHandler && typeof changeHandler === 'function') {
             changeHandler.call(this, changes);
@@ -700,215 +700,6 @@ define('base/view',['base/app', 'base/model', 'base/util'], function (app, BaseM
     return BaseView;
 });
 
-define('base/itemView',['base/view'],function(BaseView){
-
-    var ItemView = BaseView.extend({
-        tagName:'li',
-        template:'{{name}}'
-    });
-
-    return ItemView;
-});
-define('base/collectionView',['base/view', 'base/itemView', 'base/util'], function (BaseView, BaseItemView, util) {
-
-
-
-    var CollectionView = BaseView.extend({
-        tagName: 'ul',
-        dataEvents:{
-            'add' : 'addHandler',
-            'remove':'removeHandler'
-        },
-        postRender: function () {
-            collectionRender.call(this);
-        },
-        addHandler:function(event, model){
-            this.addItem(model)
-        },
-        removeHandler:function(event,model){
-            this.removeItem(model)
-        }
-    });
-
-    var collectionRender = function(){
-        var _this = this;
-        var viewArray = {};
-        var el = this.$el;
-        var coll = this.collection;
-
-        _this.addItem = function(model, containerEl){
-            if(!containerEl){
-                containerEl = el;
-            }
-            var index = coll.indexOf(model);
-
-            var ItemView = _this.getOption('itemView') || BaseItemView;
-            var view = util.createView({model: model, className:'id-'+model.id, View:ItemView});
-            viewArray[model.id] = view;
-
-            var index = coll.indexOf(model);
-            if(index=== 0){
-                view.$el.prependTo(containerEl);
-            }else if(index >= coll.length -1){
-                view.$el.appendTo(containerEl);
-            }else{
-                var beforeView = _this.getModelViewAt(coll.at(index-1).id);
-                view.$el.insertAfter(beforeView.$el)
-            }
-
-        }
-
-        _this.removeItem = function(model){
-            var view = _this.getModelViewAt(model.id);
-            view.remove();
-        }
-
-        _this.getModelViewAt =function(id){
-            return viewArray[id];
-        }
-
-        var fragment = document.createDocumentFragment();
-        coll.each(function (model, index) {
-            _this.addItem(model, fragment);
-        });
-        this.$el.append(fragment);
-    }
-
-    return CollectionView;
-});
-
-define('base/collection',[ 'base/model'],function(BaseModel){
-
-    var BaseCollection = Backbone.Collection.extend({
-        model:BaseModel
-    });
-
-    return BaseCollection;
-});
-define('base',['require','base/view','base/collectionView','base/itemView','base/model','base/collection','base/util','base/app','base/router'],function (require) {
-    return {
-        View: require('base/view'),
-        CollectionView: require('base/collectionView'),
-        ItemView: require('base/itemView'),
-        Model: require('base/model'),
-        Collection: require('base/collection'),
-        util:require('base/util'),
-        app:require('base/app'),
-        Router:require('base/router')
-    }
-
-});
-
-/**
- * Created with JetBrains WebStorm.
- * User: ravi.hamsa
- * Date: 28/06/13
- * Time: 4:18 PM
- * To change this template use File | Settings | File Templates.
- */
-define('widgets/form/validator',['base/app'],function(app){
-    
-
-
-
-    var validateValue=function(value, validationRules){
-
-        var errors=[];
-        var errorRule;
-
-        var isValid = _.every(validationRules, function (rule) {
-            var isValidForRule = validationRuleMethods[rule.expr].call(this, rule, value);
-            if (!isValidForRule) {
-                errors.push(rule);
-                errorRule = rule;
-            }
-            return isValidForRule;
-        });
-
-        return {
-            isValid:isValid,
-            errors:errors,
-            errorRule:errorRule
-        };
-    };
-
-    var validationRuleMethods = {
-        'req': function (rule, value) {
-            return !_.isEmpty(value);
-        },
-        'digits': function (rule, value) {
-            return (/^\d{5}$/).test(value);
-        },
-        'alphanumeric': function (rule, value) {
-            var ck_alphaNumeric = /^\w+$/;
-            return ck_alphaNumeric.test(value);
-        },
-        'number': function (rule, value) {
-            if (value === undefined) {
-                return true;
-            }
-            var numberVal = +value;
-            return numberVal === numberVal;
-        },
-        'email': function (rule, value) {
-            var ck_email = /^([\w\-]+(?:\.[\w\-]+)*)@((?:[\w\-]+\.)*\w[\w\-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
-            return ck_email.test($.trim(value));
-        },
-        'minlen': function (rule, value) {
-            var min = rule.length;
-            return $.trim(String(value)).length >= min;
-        },
-        'maxlen': function (rule, value, exprvalue) {
-            var max = rule.length;
-            return $.trim(String(value)).length <= max;
-        },
-        'lt': function (rule, value, exprvalue) {
-            var target = parseFloat(exprvalue);
-            var curvalue = parseFloat(value);
-            return curvalue < target;
-        },
-        'gt': function (rule, value, exprvalue) {
-            var target = parseFloat(exprvalue);
-            var curvalue = parseFloat(value);
-            return curvalue > target;
-        },
-        'eq': function (rule, value, exprvalue) {
-            return exprvalue === value;
-        },
-        'neq': function (rule, value) {
-            return rule.value !== value;
-        },
-        'url': function (rule, value) {
-            if (value === '') {
-                return true;
-            }
-            var ck_url = /(http|https|market):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/i;
-            return ck_url.test($.trim(value));
-        },
-        'emaillist': function (rule, value) {
-            var emails = value.split(',');
-            var ck_email = /^([\w\-]+(?:\.[\w\-]+)*)@((?:[\w\-]+\.)*\w[\w\-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
-            for (var i = 0; i < emails.length; i++) {
-                if ($.trim(emails[i]) !== '' && !ck_email.test($.trim(emails[i]))) {
-                    return false;
-                }
-            }
-            return true;
-        },
-        'function': function (rule, value) {
-            var func = rule.func;
-            return func.call(null, value);
-        }
-
-    };
-
-
-
-    return {
-        validateValue:validateValue,
-        validationRuleMethods:validationRuleMethods
-    };
-});
 /**
  * @license RequireJS text 2.0.5+ Copyright (c) 2010-2012, The Dojo Foundation All Rights Reserved.
  * Available via the MIT or new BSD license.
@@ -1271,6 +1062,291 @@ define('text',['module'], function (module) {
         };
     }
     return text;
+});
+define('text!widgets/header/header.html',[],function () { return '<div>\n    <a href="http://ravihamsa.com">Ravi Hamsa</a>\n    <ul class="nav nav-pills">\n        <li class="examples"><a href="#examples/landing">Examples</a></li>\n        <li class="studio"><a href="#studio">Studio</a></li>\n    </ul>\n</div>';});
+
+define('widgets/header',['base/view', 'base/model', 'text!./header/header.html'],function(BaseView, BaseModel, template){
+
+    var HeaderView = BaseView.extend({
+        template:template,
+        appIdChangeHandler:function(value){
+            this.$('.active').removeClass('active');
+            this.$('.'+value).addClass('active');
+        }
+    });
+
+    return {
+        View:HeaderView,
+        Model:BaseModel
+    };
+});
+define('base/page',['base/view', 'base/model', 'widgets/header'],function(BaseView, BaseModel, Header){
+
+    var PageView = BaseView.extend({
+        postRender:function(){
+            var header = new Header.View({
+                el:this.$('#header'),
+                model:this.model
+            });
+            header.render();
+        },
+        changeHandler:function(changes){
+            var attr = this.model.toJSON();
+            if(changes.appId){
+                require(['apps/'+attr.appId],function(){
+                    require(['apps/'+attr.appId+'/app'], function(app){
+                        app.renderPage(attr.pageId, attr);
+                    })
+                })
+            }else if(changes.pageId){
+                require(['apps/'+attr.appId+'/app'], function(app){
+                    app.renderPage(attr.pageId, attr);
+                })
+            }
+        }
+    });
+
+    var PageModel = BaseModel.extend({
+
+    })
+
+    return {
+        Model:PageModel,
+        View:PageView
+    }
+
+})
+;
+define('base/itemView',['base/view'],function(BaseView){
+
+    var ItemView = BaseView.extend({
+        tagName:'li',
+        template:'{{name}}'
+    });
+
+    return ItemView;
+});
+define('base/collectionView',['base/view', 'base/itemView', 'base/util'], function (BaseView, BaseItemView, util) {
+
+
+
+    var CollectionView = BaseView.extend({
+        tagName: 'ul',
+        dataEvents:{
+            'add' : 'addHandler',
+            'remove':'removeHandler'
+        },
+        postRender: function () {
+            collectionRender.call(this);
+        },
+        addHandler:function(event, model){
+            this.addItem(model)
+        },
+        removeHandler:function(event,model){
+            this.removeItem(model)
+        }
+    });
+
+    var collectionRender = function(){
+        var _this = this;
+        var viewArray = {};
+        var el = this.$el;
+        var coll = this.collection;
+
+        _this.addItem = function(model, containerEl){
+            if(!containerEl){
+                containerEl = el;
+            }
+            var index = coll.indexOf(model);
+
+            var ItemView = _this.getOption('itemView') || BaseItemView;
+            var view = util.createView({model: model, className:'id-'+model.id, View:ItemView});
+            viewArray[model.id] = view;
+
+            var index = coll.indexOf(model);
+            if(index=== 0){
+                view.$el.prependTo(containerEl);
+            }else if(index >= coll.length -1){
+                view.$el.appendTo(containerEl);
+            }else{
+                var beforeView = _this.getModelViewAt(coll.at(index-1).id);
+                view.$el.insertAfter(beforeView.$el)
+            }
+
+        }
+
+        _this.removeItem = function(model){
+            var view = _this.getModelViewAt(model.id);
+            view.remove();
+        }
+
+        _this.getModelViewAt =function(id){
+            return viewArray[id];
+        }
+
+        var fragment = document.createDocumentFragment();
+        coll.each(function (model, index) {
+            _this.addItem(model, fragment);
+        });
+        this.$el.append(fragment);
+    }
+
+    return CollectionView;
+});
+
+define('base/collection',[ 'base/model'],function(BaseModel){
+
+    var BaseCollection = Backbone.Collection.extend({
+        model:BaseModel
+    });
+
+    return BaseCollection;
+});
+define('base/helpers',['./app'],function(app){
+
+    Handlebars.registerHelper('elementLabel', function(element) {
+        return element.name;
+    });
+
+    Handlebars.registerHelper('stringify', function(obj) {
+        return JSON.stringify(obj)
+    });
+
+    Handlebars.registerHelper('toggleClass', function(attributeName) {
+
+        if(this[attributeName]){
+            return attributeName;
+        }
+    });
+
+
+})
+;
+define('base',['require','base/view','base/page','base/collectionView','base/itemView','base/model','base/collection','base/util','base/app','base/router','base/helpers'],function (require) {
+    return {
+        View: require('base/view'),
+        Page: require('base/page'),
+        CollectionView: require('base/collectionView'),
+        ItemView: require('base/itemView'),
+        Model: require('base/model'),
+        Collection: require('base/collection'),
+        util:require('base/util'),
+        app:require('base/app'),
+        Router:require('base/router'),
+        helpers:require('base/helpers')
+    }
+
+});
+
+/**
+ * Created with JetBrains WebStorm.
+ * User: ravi.hamsa
+ * Date: 28/06/13
+ * Time: 4:18 PM
+ * To change this template use File | Settings | File Templates.
+ */
+define('widgets/form/validator',['base/app'],function(app){
+    
+
+
+
+    var validateValue=function(value, validationRules){
+
+        var errors=[];
+        var errorRule;
+
+        var isValid = _.every(validationRules, function (rule) {
+            var isValidForRule = validationRuleMethods[rule.expr].call(this, rule, value);
+            if (!isValidForRule) {
+                errors.push(rule);
+                errorRule = rule;
+            }
+            return isValidForRule;
+        });
+
+        return {
+            isValid:isValid,
+            errors:errors,
+            errorRule:errorRule
+        };
+    };
+
+    var validationRuleMethods = {
+        'req': function (rule, value) {
+            return !_.isEmpty(value);
+        },
+        'digits': function (rule, value) {
+            return (/^\d{5}$/).test(value);
+        },
+        'alphanumeric': function (rule, value) {
+            var ck_alphaNumeric = /^\w+$/;
+            return ck_alphaNumeric.test(value);
+        },
+        'number': function (rule, value) {
+            if (value === undefined) {
+                return true;
+            }
+            var numberVal = +value;
+            return numberVal === numberVal;
+        },
+        'email': function (rule, value) {
+            var ck_email = /^([\w\-]+(?:\.[\w\-]+)*)@((?:[\w\-]+\.)*\w[\w\-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
+            return ck_email.test($.trim(value));
+        },
+        'minlen': function (rule, value) {
+            var min = rule.length;
+            return $.trim(String(value)).length >= min;
+        },
+        'maxlen': function (rule, value, exprvalue) {
+            var max = rule.length;
+            return $.trim(String(value)).length <= max;
+        },
+        'lt': function (rule, value, exprvalue) {
+            var target = parseFloat(exprvalue);
+            var curvalue = parseFloat(value);
+            return curvalue < target;
+        },
+        'gt': function (rule, value, exprvalue) {
+            var target = parseFloat(exprvalue);
+            var curvalue = parseFloat(value);
+            return curvalue > target;
+        },
+        'eq': function (rule, value, exprvalue) {
+            return exprvalue === value;
+        },
+        'neq': function (rule, value) {
+            return rule.value !== value;
+        },
+        'url': function (rule, value) {
+            if (value === '') {
+                return true;
+            }
+            var ck_url = /(http|https|market):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/i;
+            return ck_url.test($.trim(value));
+        },
+        'emaillist': function (rule, value) {
+            var emails = value.split(',');
+            var ck_email = /^([\w\-]+(?:\.[\w\-]+)*)@((?:[\w\-]+\.)*\w[\w\-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
+            for (var i = 0; i < emails.length; i++) {
+                if ($.trim(emails[i]) !== '' && !ck_email.test($.trim(emails[i]))) {
+                    return false;
+                }
+            }
+            return true;
+        },
+        'function': function (rule, value) {
+            var func = rule.func;
+            return func.call(null, value);
+        }
+
+    };
+
+
+
+    return {
+        validateValue:validateValue,
+        validationRuleMethods:validationRuleMethods
+    };
 });
 define('text!widgets/form/inputView.html',[],function () { return '<div class="control-group">\n    <label class="control-label">\n        {{label}}\n    </label>\n\n    <div class="controls type-{{type}}">\n        <input type="{{type}}" name="{{name}}" value="{{value}}" class="el-{{name}}"/>\n        <span class="help-inline"></span>\n    </div>\n</div>';});
 
@@ -1871,23 +1947,6 @@ define('widgets/form',[
     };
 });
 
-define('text!widgets/header/header.html',[],function () { return '<div>\n    <a href="http://ravihamsa.com">Ravi Hamsa</a>\n    <ul class="nav nav-pills">\n        <li class="examples"><a href="#examples/landing">Examples</a></li>\n        <li class="studio"><a href="#studio">Studio</a></li>\n    </ul>\n</div>';});
-
-define('widgets/header',['base', 'text!./header/header.html'],function(Bone, template){
-
-    var HeaderView = Bone.View.extend({
-        template:template,
-        appIdChangeHandler:function(value){
-            this.$('.active').removeClass('active');
-            this.$('.'+value).addClass('active');
-        }
-    });
-
-    return {
-        View:HeaderView,
-        Model:Bone.Model
-    };
-});
 define('list/singleSelect',['base'], function (Base) {
 
     var baseUtil =  Base.util;

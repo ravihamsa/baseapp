@@ -1,6 +1,6 @@
-define(['base', 'widgets/header'],function(Base, Header){
+define(['base/view', 'base/model', 'widgets/header'],function(BaseView, BaseModel, Header){
 
-    var PageView = Base.View.extend({
+    var PageView = BaseView.extend({
         postRender:function(){
             var header = new Header.View({
                 el:this.$('#header'),
@@ -24,7 +24,7 @@ define(['base', 'widgets/header'],function(Base, Header){
         }
     });
 
-    var PageModel = Base.Model.extend({
+    var PageModel = BaseModel.extend({
 
     })
 
