@@ -10,5 +10,6 @@
     },
     out:'../dist/list-base-widget.js',
     name:'widgets',
+    include:['base','list'],
     optimize: 'none'
 })

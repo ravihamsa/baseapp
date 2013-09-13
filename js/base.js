@@ -1,7 +1,7 @@
 define(function (require) {
     return {
         View: require('base/view'),
-        Page: require('base/page'),
+        Root: require('base/root'),
         CollectionView: require('base/collectionView'),
         ItemView: require('base/itemView'),
         Model: require('base/model'),

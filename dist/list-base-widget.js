@@ -444,9 +444,7 @@ define('base/view',['base/app', 'base/model', 'base/util'], function (app, BaseM
 
         },
         renderTemplate: function (templateFunction) {
-            var templateHTML = $(templateFunction(this.model.toJSON()));
-            templateHTML.find('a').addClass(this.cid);
-            this.$el.html(templateHTML);
+            this.$el.html(templateFunction(this.model.toJSON()));
         },
         loadMeta: function () {
             if (!this.metaDef) {
@@ -1080,9 +1078,9 @@ define('widgets/header',['base/view', 'base/model', 'text!./header/header.html']
         Model:BaseModel
     };
 });
-define('base/page',['base/view', 'base/model', 'widgets/header'],function(BaseView, BaseModel, Header){
+define('base/root',['base/view', 'base/model', 'widgets/header'],function(BaseView, BaseModel, Header){
 
-    var PageView = BaseView.extend({
+    var RootView = BaseView.extend({
         postRender:function(){
             var header = new Header.View({
                 el:this.$('#header'),
@@ -1106,13 +1104,8 @@ define('base/page',['base/view', 'base/model', 'widgets/header'],function(BaseVi
         }
     });
 
-    var PageModel = BaseModel.extend({
-
-    })
-
     return {
-        Model:PageModel,
-        View:PageView
+        View:RootView
     }
 
 })
@@ -1202,7 +1195,7 @@ define('base/collection',[ 'base/model'],function(BaseModel){
 
     return BaseCollection;
 });
-define('base/helpers',['./app'],function(app){
+define('base/helpers',['base/app'],function(app){
 
     Handlebars.registerHelper('elementLabel', function(element) {
         return element.name;
@@ -1222,10 +1215,10 @@ define('base/helpers',['./app'],function(app){
 
 })
 ;
-define('base',['require','base/view','base/page','base/collectionView','base/itemView','base/model','base/collection','base/util','base/app','base/router','base/helpers'],function (require) {
+define('base',['require','base/view','base/root','base/collectionView','base/itemView','base/model','base/collection','base/util','base/app','base/router','base/helpers'],function (require) {
     return {
         View: require('base/view'),
-        Page: require('base/page'),
+        Root: require('base/root'),
         CollectionView: require('base/collectionView'),
         ItemView: require('base/itemView'),
         Model: require('base/model'),
@@ -2158,5 +2151,80 @@ define('widgets',['require','widgets/form','widgets/header','widgets/messageStac
         Header: require('widgets/header'),
         MessageStack: require('widgets/messageStack'),
         Tab: require('widgets/tab')
+    }
+});
+define('list/multiSelect',['base', 'list/singleSelect'], function (Base, SingleSelect) {
+
+
+    var setupFunctions = [setupMultiSelection];
+
+    var Model = Base.Model.extend({
+        constructor: function (options) {
+            var _this = this;
+            Base.Model.call(_this, options);
+            _.each(setupFunctions, function(func){
+                func.call(_this, options);
+            })
+        }
+    })
+
+
+    function setupMultiSelection() {
+
+        var _this = this, selected = [];
+
+        var coll = _this.get('items');
+
+
+
+        _this.getSelected = function () {
+            return selected;
+        }
+
+        _this.setSelectedById = function(id){
+            var curItem = coll.get(id);
+            curItem.toggleSelect();
+            updateSelected();
+        }
+
+        _this.setSelected = function(curItem){
+            curItem.toggleSelect();
+            updateSelected();
+        }
+
+        _this.selectAll = function(){
+            coll.each(function(model){
+                model.select();
+            })
+            updateSelected();
+        }
+
+        _this.selectNone = function(){
+            coll.each(function(model){
+                model.deselect();
+            })
+            updateSelected();
+        }
+        var updateSelected = function(){
+            selected = coll.where({selected: true});
+            _this.set('selectedCount', selected.length);
+        }
+
+        updateSelected();
+    }
+
+    return {
+        View:SingleSelect.View,
+        Model:Model,
+        ItemView:SingleSelect.ItemView,
+        ItemCollection:SingleSelect.ItemCollection
+    }
+
+});
+define('list',['require','list/singleSelect','list/multiSelect'],function (require) {
+
+    return {
+        SingleSelect: require('list/singleSelect'),
+        MultiSelect: require('list/multiSelect')
     }
 });

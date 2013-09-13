@@ -32,9 +32,7 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
 
         },
         renderTemplate: function (templateFunction) {
-            var templateHTML = $(templateFunction(this.model.toJSON()));
-            templateHTML.find('a').addClass(this.cid);
-            this.$el.html(templateHTML);
+            this.$el.html(templateFunction(this.model.toJSON()));
         },
         loadMeta: function () {
             if (!this.metaDef) {
