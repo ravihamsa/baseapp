@@ -8,6 +8,7 @@ define(['require', 'base/router'], function (require, Router) {
     var app = {
         root: '/',
         baseUrl: 'js/',
+        defaultApp:'default',
         appBody: '#app-body',
         compileTemplate: function (str) {
             return Handlebars.compile(str);

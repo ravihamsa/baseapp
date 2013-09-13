@@ -15,7 +15,7 @@ define(function (require) {
         index: function () {
 
             require(['base/app'],function(app){
-                app.router.navigate('#studio', {trigger: true});
+                app.router.navigate('#'+app.defaultApp, {trigger: true});
             });
 
         },

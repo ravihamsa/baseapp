@@ -206,7 +206,7 @@ define('base/router',['require','base/util'],function (require) {
         index: function () {
 
             require(['base/app'],function(app){
-                app.router.navigate('#studio', {trigger: true});
+                app.router.navigate('#'+app.defaultApp, {trigger: true});
             });
 
         },
@@ -242,6 +242,7 @@ define('base/app',['require', 'base/router'], function (require, Router) {
     var app = {
         root: '/',
         baseUrl: 'js/',
+        defaultApp:'default',
         appBody: '#app-body',
         compileTemplate: function (str) {
             return Handlebars.compile(str);
