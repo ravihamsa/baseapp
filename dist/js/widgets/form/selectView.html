@@ -1,0 +1,14 @@
+<div class="control-group">
+    <label class="control-label">
+        {{elementLabel this}}
+    </label>
+
+    <div class="controls">
+        <select name="{{name}}" class="el-{{name}}">
+            {{#each options}}
+            <option value="{{id}}">{{name}}</option>
+            {{/each}}
+        </select>
+        <span class="help-inline"></span>
+    </div>
+</div>
