@@ -24,6 +24,18 @@
         {
             name: 'list',
             exclude:['base']
+        },
+        {
+            name: 'widgets',
+            exclude:['base', 'list']
+        },
+        {
+            name: 'base-list',
+            include:['list']
+        },
+        {
+            name: 'base-list-widgets',
+            include:['base', 'list']
         }
 
 
