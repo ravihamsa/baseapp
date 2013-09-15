@@ -35,12 +35,7 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
             this.$el.html(templateFunction(this.model.toJSON()));
         },
         loadMeta: function () {
-            if (!this.metaDef) {
-                var def = $.Deferred();
-                this.metaDef = def.promise();
-                def.resolve();
-            }
-            return this.metaDef;
+            return $.when([]);
         },
         getOption: function (option) {
             return this.options[option];
@@ -259,10 +254,18 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
         var _this = this;
         var requestConfigs = _this.getOption('requests') || _this.requests;
         var loading = false;
-        if(!requestConfigs){
-            return;
+
+        var defArray = [];
+
+        var addRequest = function(config, callback){
+            var def = app.getRequestDef(config);
+            defArray.push(def);
+            def.done(callback);
+            def.fail(callback);
+            return def;
         }
-        var requestQue = util.aSyncQueue(app.makeRequest, 10);
+
+        var requestQue = util.aSyncQueue(addRequest);
         requestQue.added = function(){
             loading = true;
             _this.loadingHandler.call(_this, loading);
@@ -272,13 +275,29 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
             _this.loadingHandler.call(_this, loading);
         }
 
-        requestQue.push(requestConfigs, function(err, data){
-            _this.trigger('requestComplete', data);
+
+        requestQue.push(requestConfigs || [], function(data){
+            _this.model.set(data);
         })
+
+        _this.loadMeta = function(){
+            return $.when(defArray);
+        }
+
+        _this.addRequest = function(config, callback){
+            requestQue.push(config, callback)
+        }
+
+        /*
+
 
         _this.getRequestQue = function(){
             return requestQue;
         }
+
+        */
+
+
     }
 
     var setupFunctions = [bindDataEvents, setupTemplateEvents, setupAttributeWatch, setupActionNavigateAnchors, setupOnChangeRender, setupStateEvents, setupMetaRequests];

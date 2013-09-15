@@ -65,13 +65,19 @@ define(['require', 'base/router'], function (require, Router) {
         appModel: new Backbone.Model(),
         getRequestDef: function (config) {
             var _this = this;
+            var attributeName = config.name || '';
+            var responseParser = config.parser;
+            config = _.omit(config, 'name', 'parser');
+
+
             var hash = getHash(JSON.stringify(_.pick(config, 'id', 'params')));
-            var def = getTemplateDefByHash(hash);
+            var def = getRequestDefByHash(hash);
 
             if (!def) {
                 def = $.Deferred();
                 $.ajax(config).done(function (resp) {
-                    var parsedResponse = _this.parseSuccessResponse(resp)
+                    var parserFunc = responseParser || _this.parseSuccessResponse;
+                    var parsedResponse = parserFunc(resp)
                     if (parsedResponse.errors) {
                         def.reject(parsedResponse.errors);
                     } else {
@@ -79,7 +85,8 @@ define(['require', 'base/router'], function (require, Router) {
                         def.resolve(parsedResponse);
                     }
                 }).fail(function (resp) {
-                        var parsedResponse = _this.parseFailureResponse(resp)
+                        var parserFunc = responseParser || _this.parseFailureResponse;
+                        var parsedResponse = parserFunc(resp)
                         def.reject(parsedResponse.errors);
                     })
 
@@ -87,19 +94,26 @@ define(['require', 'base/router'], function (require, Router) {
             return def;
         },
         makeRequest:function(task, callback){
-            setTimeout(function(){
-                callback(null, task.params);
-            }, Math.round(Math.random()*3000))
+            var def = this.getRequestDef(task);
+            def.done(function(results){
+                callback(null,results)
+            })
+            def.fail(function(errors){
+                callback(errors);
+            });
         },
         beautifyId:function(s){
             s = s.replace(/([A-Z])/g, function(s){return ' '+s});
             return s.replace(/(^.)/g, function(s){return s.toUpperCase()});
+        },
+        getDataIndex:function(){
+            return dataIndex;
         }
     }
 
 
     var getHash = function (key) {
-        return hex_md5(key.toString());
+        return key.toString();
     }
 
     var getTemplateDefByHash = function (hash) {
