@@ -1,4 +1,4 @@
-define(function (require) {
+define(function(require) {
 
     var util = require('base/util');
 
@@ -12,24 +12,24 @@ define(function (require) {
             ':appId/:pageId/': 'loadAppPage'
 
         },
-        index: function () {
+        index: function() {
 
-            require(['base/app'],function(app){
-                app.router.navigate('#'+app.defaultApp, {trigger: true});
+            require(['base/app'], function(app) {
+                app.router.navigate('#' + app.defaultApp, {trigger: true});
             });
 
         },
-        loadAppPage: function (appId, pageId, params) {
+        loadAppPage: function(appId, pageId, params) {
 
-            require(['base/app'],function(baseApp){
+            require(['base/app'], function(baseApp) {
                 var paramsObject = util.paramsToObject(params);
                 paramsObject.appId = appId;
                 paramsObject.pageId = pageId;
                 baseApp.appModel.set(paramsObject);
             });
         },
-        loadApp:function(appId, pageId, params){
-            require(['base/app'],function(baseApp){
+        loadApp: function(appId, pageId, params) {
+            require(['base/app'], function(baseApp) {
                 var paramsObject = util.paramsToObject(params);
                 paramsObject.appId = appId;
                 paramsObject.pageId = pageId;
@@ -40,4 +40,4 @@ define(function (require) {
 
     return Router;
 
-})
+});

@@ -1,7 +1,7 @@
-define([ 'base/model'],function(BaseModel){
+define(['base/model'], function(BaseModel) {
 
     var BaseCollection = Backbone.Collection.extend({
-        model:BaseModel
+        model: BaseModel
     });
 
     return BaseCollection;

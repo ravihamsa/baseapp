@@ -1,18 +1,18 @@
-define(['base', 'text!./messageStack/messageStack.html'],function(Bone, template){
+define(['base', 'text!./messageStack/messageStack.html'], function(Bone, template) {
 
     var MessageStack = Bone.View.extend({
-        template:template
+        template: template
 
     });
 
     var MessageStackModel = Bone.Model.extend({
-        removeAllMessages:function(){
+        removeAllMessages: function() {
 
         }
     });
 
     return {
-        View:MessageStack,
-        Model:MessageStackModel
+        View: MessageStack,
+        Model: MessageStackModel
     };
-})
+});

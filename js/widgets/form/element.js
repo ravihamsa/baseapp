@@ -5,8 +5,8 @@
  * Time: 11:36 AM
  * To change this template use File | Settings | File Templates.
  */
-define(['base/app', 'base', 'widgets/form/validator','text!./inputView.html'], function (app, Base, Validator, inputViewTemplate) {
-    "use strict";
+define(['base/app', 'base', 'widgets/form/validator', 'text!./inputView.html'], function(app, Base, Validator, inputViewTemplate) {
+    'use strict';
 
     var DOT_CONTROL_GROUP = '.control-group';
     var DOT_CONTROL_LABEL = '.control-label';
@@ -29,15 +29,15 @@ define(['base/app', 'base', 'widgets/form/validator','text!./inputView.html'], f
             group: 'elements'
         },
         idAttribute: 'name',
-        updateActive: function () {
+        updateActive: function() {
             var activeRules = this.get('activeRules');
-            var isActive = _.every(activeRules, function (rule) {
+            var isActive = _.every(activeRules, function(rule) {
                 var sourceElement = this.collection.get(rule.element);
                 return activeRuleMethods[rule.expr].call(null, sourceElement, rule);
             }, this);
             this.set('active', isActive);
         },
-        isElementValid: function (skipShowErrors) {
+        isElementValid: function(skipShowErrors) {
             var validationRules = this.get('validationRules');
             var errors = [];
             if (this.isNot('active')) {
@@ -45,7 +45,7 @@ define(['base/app', 'base', 'widgets/form/validator','text!./inputView.html'], f
             }
 
             var errorRule;
-            var isValid = _.every(validationRules, function (rule) {
+            var isValid = _.every(validationRules, function(rule) {
                 var isValidForRule = Validator.validationRuleMethods[rule.expr].call(this, rule, this.get('value'));
                 if (!isValidForRule) {
                     errors.push(rule);
@@ -55,7 +55,7 @@ define(['base/app', 'base', 'widgets/form/validator','text!./inputView.html'], f
             }, this);
             //ee.log('isElementValid',this.id, isValid, errorRule);
             this.set('valid', isValid);
-            if(!skipShowErrors) {
+            if (!skipShowErrors) {
                 if (errorRule) {
                     var message = errorRule.message || ('error.' + this.get('name') + '.' + errorRule.expr);
                     this.set('errorCode', message);
@@ -65,24 +65,24 @@ define(['base/app', 'base', 'widgets/form/validator','text!./inputView.html'], f
             }
             return errors;
         },
-        getSiblingValue:function(siblingName){
-            if(this.collection){
+        getSiblingValue: function(siblingName) {
+            if (this.collection) {
                 return this.collection.get(siblingName).get('value');
             }
         },
-        getSiblingAttribute:function(siblingName, attributeName){
-            if(this.collection){
+        getSiblingAttribute: function(siblingName, attributeName) {
+            if (this.collection) {
                 return this.collection.get(siblingName).get(attributeName);
             }
         },
-        setSiblingAttribute:function(siblingName, attributeName, value){
-            if(this.collection){
-                return this.collection.get(siblingName).set(attributeName,value);
+        setSiblingAttribute: function(siblingName, attributeName, value) {
+            if (this.collection) {
+                return this.collection.get(siblingName).set(attributeName, value);
             }
         },
-        setSiblingValue:function(siblingName, value){
-            if(this.collection){
-                return this.collection.get(siblingName).set('value',value);
+        setSiblingValue: function(siblingName, value) {
+            if (this.collection) {
+                return this.collection.get(siblingName).set('value', value);
             }
         }
     });
@@ -105,13 +105,13 @@ define(['base/app', 'base', 'widgets/form/validator','text!./inputView.html'], f
         //     this.$('input').attr('type', value);
         // },
 
-        postRender:function(){
+        postRender: function() {
             this.syncAttributes();
         },
-        syncAttributes: function () {
+        syncAttributes: function() {
             var model = this.model;
             var attr = model.toJSON();
-            _.each(attr, function (value, attribute) {
+            _.each(attr, function(value, attribute) {
                 var handler = this[attribute + 'ChangeHandler'];
                 if (handler && typeof handler === 'function') {
                     handler.call(this, model.get(attribute));
@@ -120,25 +120,25 @@ define(['base/app', 'base', 'widgets/form/validator','text!./inputView.html'], f
             this.updateValue(true);
         },
 
-        disabledChangeHandler: function (value) {
+        disabledChangeHandler: function(value) {
             this.$el.toggleClass('disabled', value);
             this.$('input').attr('disabled', value);
         },
-        readonlyChangeHandler: function (value) {
+        readonlyChangeHandler: function(value) {
             this.$el.toggleClass('readonly', value);
             this.$('input').attr('readonly', value);
         },
-        validChangeHandler: function (value) {
+        validChangeHandler: function(value) {
             this.$(DOT_CONTROL_GROUP).toggleClass(INVALID_CLASS, !value);
         },
-        activeChangeHandler: function (value) {
+        activeChangeHandler: function(value) {
             this.$el.toggle(value);
         },
-        valueChangeHandler: function (value) {
+        valueChangeHandler: function(value) {
             this.$('input').val(value);
            // console.log(value, 'txt');
         },
-        errorCodeChangeHandler: function (errorCode) {
+        errorCodeChangeHandler: function(errorCode) {
             var el = this.$(DOT_HELP_INLINE);
             //console.log('errorCodeChangeHandler',this.model.id, el, errorCode);
             if (errorCode === '') {
@@ -150,46 +150,46 @@ define(['base/app', 'base', 'widgets/form/validator','text!./inputView.html'], f
                 el.html(app.getString(errorCode));
             }
         },
-        nameChangeHandler: function (value) {
+        nameChangeHandler: function(value) {
             this.$el.addClass('element-' + value);
         },
-        valueFunction: function () {
+        valueFunction: function() {
             return this.$('input').val();
         },
-        updateValue: function (skipValidate) {
+        updateValue: function(skipValidate) {
             this.model.set('value', this.valueFunction());
             if (skipValidate !== true) {
                 this.model.isElementValid();
             }
 
         },
-        setFocus:function(){
+        setFocus: function() {
             var form = this.$el.closest('form');
             form.find('.focused').removeClass('focused');
             this.$el.addClass('focused');
         },
-        removeFocus:function(){
+        removeFocus: function() {
             this.$el.removeClass('focused');
         }
     });
 
 
     var activeRuleMethods = {
-        'eq': function (source, rule) {
+        'eq': function(source, rule) {
             return source.isEqual('value', rule.value);
         },
-        'valid': function (source) {
+        'valid': function(source) {
             source.isElementValid(true);
             return source.is('valid');
         },
-        'isIn': function (source, rule) {
+        'isIn': function(source, rule) {
             var value = source.get('value');
             return rule.value.indexOf(value) !== -1;
         },
-        'neq': function (source, rule) {
+        'neq': function(source, rule) {
             return source.isNotEqual('value', rule.value);
         },
-        'function': function (source, rule) {
+        'function': function(source, rule) {
             var func = rule.func;
             return func.apply(null, arguments);
         }
