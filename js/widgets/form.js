@@ -272,7 +272,6 @@ define([
             elements.each(function(elementModel) {
                 this.addElement(elementModel);
             }, this);
-            return this;
         },
         addElement: function(model) {
             var attr = model.toJSON();

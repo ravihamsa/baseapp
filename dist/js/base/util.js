@@ -1,28 +1,28 @@
-define(function () {
+define(function() {
 
-    var paramsToObject = function(params){
-        if(!params){
-            return  {};
+    var paramsToObject = function(params) {
+        if (!params) {
+            return {};
         }
-        var paramsArray = _.map(params.split(';'),function(str){return str.split('=');});
+        var paramsArray = _.map(params.split(';'), function(str) {return str.split('=');});
         var obj = {};
-        _.each(paramsArray,function(arr){
-            obj[arr[0]]=arr[1];
+        _.each(paramsArray, function(arr) {
+            obj[arr[0]] = arr[1];
         });
         return obj;
     };
-    var objectToParams = function(obj){
+    var objectToParams = function(obj) {
         var str = [];
 
-        _.each(obj, function(value, index){
-            str.push(index+'='+value);
+        _.each(obj, function(value, index) {
+            str.push(index + '=' + value);
         });
 
         return str.join(';');
-    }
+    };
 
 
-    var _each = function (arr, iterator) {
+    var _each = function(arr, iterator) {
         if (arr.forEach) {
             return arr.forEach(iterator);
         }
@@ -31,12 +31,12 @@ define(function () {
         }
     };
 
-    var _map = function (arr, iterator) {
+    var _map = function(arr, iterator) {
         if (arr.map) {
             return arr.map(iterator);
         }
         var results = [];
-        _each(arr, function (x, i, a) {
+        _each(arr, function(x, i, a) {
             results.push(iterator(x, i, a));
         });
         return results;
@@ -44,8 +44,8 @@ define(function () {
 
     function only_once(fn) {
         var called = false;
-        return function () {
-            if (called) throw new Error("Callback was already called.");
+        return function() {
+            if (called) throw new Error('Callback was already called.');
             called = true;
             fn.apply(null, arguments);
         }
@@ -54,28 +54,28 @@ define(function () {
     var nextTick;
 
     if (typeof setImmediate === 'function') {
-        nextTick = function (fn) {
+        nextTick = function(fn) {
             // not a direct alias for IE10 compatibility
             setImmediate(fn);
         };
     }
     else {
-        nextTick = function (fn) {
+        nextTick = function(fn) {
             setTimeout(fn, 0);
         };
     }
 
 
     return {
-        paramsToObject:paramsToObject,
-        objectToParams:objectToParams,
-        createView: function (config) {
+        paramsToObject: paramsToObject,
+        objectToParams: objectToParams,
+        createView: function(config) {
 
             var view;
             var viewTye = 'model';
 
             if (config.collection || config.Collection) {
-                viewTye = 'collection'
+                viewTye = 'collection';
             }
 
 
@@ -111,12 +111,12 @@ define(function () {
 
             return view;
         },
-        aSyncQueue: function (worker, concurrency) {
+        aSyncQueue: function(worker, concurrency) {
             if (concurrency === undefined) {
                 concurrency = 1;
             }
             function _insert(q, data, pos, callback) {
-                if(data.constructor !== Array) {
+                if (data.constructor !== Array) {
                     data = [data];
                 }
                 _each(data, function(task) {
@@ -145,24 +145,24 @@ define(function () {
                 saturated: null,
                 empty: null,
                 drain: null,
-                added:null,
-                push: function (data, callback) {
+                added: null,
+                push: function(data, callback) {
                     _insert(q, data, false, callback);
-                    if(q.added && q.tasks.length !== 0){
+                    if (q.added && q.tasks.length !== 0) {
                         q.added();
                     }
                 },
-                unshift: function (data, callback) {
+                unshift: function(data, callback) {
                     _insert(q, data, true, callback);
                 },
-                process: function () {
+                process: function() {
                     if (workers < q.concurrency && q.tasks.length) {
                         var task = q.tasks.shift();
                         if (q.empty && q.tasks.length === 0) {
                             q.empty();
                         }
                         workers += 1;
-                        var next = function () {
+                        var next = function() {
                             workers -= 1;
                             if (task.callback) {
                                 task.callback.apply(task, arguments);
@@ -176,15 +176,15 @@ define(function () {
                         worker(task.data, cb);
                     }
                 },
-                length: function () {
+                length: function() {
                     return q.tasks.length;
                 },
-                running: function () {
+                running: function() {
                     return workers;
                 }
             };
             return q;
         }
-    }
+    };
 
 });

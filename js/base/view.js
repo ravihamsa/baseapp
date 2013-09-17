@@ -11,6 +11,9 @@ define(['base/app', 'base/model', 'base/util'], function(app, BaseModel, util) {
         render: function() {
             var _this = this;
             _this.beforeRender();
+            _this.loadMeta().then(function(){
+                console.log(arguments);
+            });
             app.getTemplateDef(_this.getTemplate()).done(function(templateFunction) {
                 if (!_this.model) {
                     _this.model = new BaseModel();
@@ -33,9 +36,6 @@ define(['base/app', 'base/model', 'base/util'], function(app, BaseModel, util) {
         },
         renderTemplate: function(templateFunction) {
             this.$el.html(templateFunction(this.model.toJSON()));
-        },
-        loadMeta: function() {
-            return $.when([]);
         },
         getOption: function(option) {
             return this.options[option];
@@ -272,6 +272,7 @@ define(['base/app', 'base/model', 'base/util'], function(app, BaseModel, util) {
         };
         requestQue.drain = function() {
             loading = false;
+            defArray=[];
             _this.loadingHandler.call(_this, loading);
         };
 
@@ -281,7 +282,7 @@ define(['base/app', 'base/model', 'base/util'], function(app, BaseModel, util) {
         });
 
         _this.loadMeta = function() {
-            return $.when(defArray);
+            return $.when.apply(null, defArray);
         };
 
         _this.addRequest = function(config, callback) {

@@ -1,29 +1,29 @@
 
-define('base/util',[],function () {
+define('base/util',[],function() {
 
-    var paramsToObject = function(params){
-        if(!params){
-            return  {};
+    var paramsToObject = function(params) {
+        if (!params) {
+            return {};
         }
-        var paramsArray = _.map(params.split(';'),function(str){return str.split('=');});
+        var paramsArray = _.map(params.split(';'), function(str) {return str.split('=');});
         var obj = {};
-        _.each(paramsArray,function(arr){
-            obj[arr[0]]=arr[1];
+        _.each(paramsArray, function(arr) {
+            obj[arr[0]] = arr[1];
         });
         return obj;
     };
-    var objectToParams = function(obj){
+    var objectToParams = function(obj) {
         var str = [];
 
-        _.each(obj, function(value, index){
-            str.push(index+'='+value);
+        _.each(obj, function(value, index) {
+            str.push(index + '=' + value);
         });
 
         return str.join(';');
-    }
+    };
 
 
-    var _each = function (arr, iterator) {
+    var _each = function(arr, iterator) {
         if (arr.forEach) {
             return arr.forEach(iterator);
         }
@@ -32,12 +32,12 @@ define('base/util',[],function () {
         }
     };
 
-    var _map = function (arr, iterator) {
+    var _map = function(arr, iterator) {
         if (arr.map) {
             return arr.map(iterator);
         }
         var results = [];
-        _each(arr, function (x, i, a) {
+        _each(arr, function(x, i, a) {
             results.push(iterator(x, i, a));
         });
         return results;
@@ -45,8 +45,8 @@ define('base/util',[],function () {
 
     function only_once(fn) {
         var called = false;
-        return function () {
-            if (called) throw new Error("Callback was already called.");
+        return function() {
+            if (called) throw new Error('Callback was already called.');
             called = true;
             fn.apply(null, arguments);
         }
@@ -55,28 +55,28 @@ define('base/util',[],function () {
     var nextTick;
 
     if (typeof setImmediate === 'function') {
-        nextTick = function (fn) {
+        nextTick = function(fn) {
             // not a direct alias for IE10 compatibility
             setImmediate(fn);
         };
     }
     else {
-        nextTick = function (fn) {
+        nextTick = function(fn) {
             setTimeout(fn, 0);
         };
     }
 
 
     return {
-        paramsToObject:paramsToObject,
-        objectToParams:objectToParams,
-        createView: function (config) {
+        paramsToObject: paramsToObject,
+        objectToParams: objectToParams,
+        createView: function(config) {
 
             var view;
             var viewTye = 'model';
 
             if (config.collection || config.Collection) {
-                viewTye = 'collection'
+                viewTye = 'collection';
             }
 
 
@@ -112,12 +112,12 @@ define('base/util',[],function () {
 
             return view;
         },
-        aSyncQueue: function (worker, concurrency) {
+        aSyncQueue: function(worker, concurrency) {
             if (concurrency === undefined) {
                 concurrency = 1;
             }
             function _insert(q, data, pos, callback) {
-                if(data.constructor !== Array) {
+                if (data.constructor !== Array) {
                     data = [data];
                 }
                 _each(data, function(task) {
@@ -146,24 +146,24 @@ define('base/util',[],function () {
                 saturated: null,
                 empty: null,
                 drain: null,
-                added:null,
-                push: function (data, callback) {
+                added: null,
+                push: function(data, callback) {
                     _insert(q, data, false, callback);
-                    if(q.added && q.tasks.length !== 0){
+                    if (q.added && q.tasks.length !== 0) {
                         q.added();
                     }
                 },
-                unshift: function (data, callback) {
+                unshift: function(data, callback) {
                     _insert(q, data, true, callback);
                 },
-                process: function () {
+                process: function() {
                     if (workers < q.concurrency && q.tasks.length) {
                         var task = q.tasks.shift();
                         if (q.empty && q.tasks.length === 0) {
                             q.empty();
                         }
                         workers += 1;
-                        var next = function () {
+                        var next = function() {
                             workers -= 1;
                             if (task.callback) {
                                 task.callback.apply(task, arguments);
@@ -177,19 +177,20 @@ define('base/util',[],function () {
                         worker(task.data, cb);
                     }
                 },
-                length: function () {
+                length: function() {
                     return q.tasks.length;
                 },
-                running: function () {
+                running: function() {
                     return workers;
                 }
             };
             return q;
         }
-    }
+    };
 
 });
-define('base/router',['require','base/util'],function (require) {
+
+define('base/router',['require','base/util'],function(require) {
 
     var util = require('base/util');
 
@@ -203,24 +204,24 @@ define('base/router',['require','base/util'],function (require) {
             ':appId/:pageId/': 'loadAppPage'
 
         },
-        index: function () {
+        index: function() {
 
-            require(['base/app'],function(app){
-                app.router.navigate('#'+app.defaultApp, {trigger: true});
+            require(['base/app'], function(app) {
+                app.router.navigate('#' + app.defaultApp, {trigger: true});
             });
 
         },
-        loadAppPage: function (appId, pageId, params) {
+        loadAppPage: function(appId, pageId, params) {
 
-            require(['base/app'],function(baseApp){
+            require(['base/app'], function(baseApp) {
                 var paramsObject = util.paramsToObject(params);
                 paramsObject.appId = appId;
                 paramsObject.pageId = pageId;
                 baseApp.appModel.set(paramsObject);
             });
         },
-        loadApp:function(appId, pageId, params){
-            require(['base/app'],function(baseApp){
+        loadApp: function(appId, pageId, params) {
+            require(['base/app'], function(baseApp) {
                 var paramsObject = util.paramsToObject(params);
                 paramsObject.appId = appId;
                 paramsObject.pageId = pageId;
@@ -232,7 +233,8 @@ define('base/router',['require','base/util'],function (require) {
     return Router;
 
 });
-define('base/app',['require', 'base/router'], function (require, Router) {
+
+define('base/app',['require', 'base/router'], function(require, Router) {
 
     var hex_md5 = window.hex_md5;
 
@@ -242,13 +244,13 @@ define('base/app',['require', 'base/router'], function (require, Router) {
     var app = {
         root: '/',
         baseUrl: 'js/',
-        defaultApp:'default',
+        defaultApp: 'default',
         appBody: '#app-body',
-        compileTemplate: function (str) {
+        compileTemplate: function(str) {
             return Handlebars.compile(str);
         },
         router: new Router(),
-        getTemplateDef: function (template) {
+        getTemplateDef: function(template) {
             var _this = this;
             template = template || '';
             var hash = getHash(template);
@@ -259,14 +261,14 @@ define('base/app',['require', 'base/router'], function (require, Router) {
                 //if template is already a function, can be used for using other template engines
                 if (typeof template === 'function') {
                     def.resolve(template);
-                } else if (typeof  template === 'string') {
+                } else if (typeof template === 'string') {
                     //app.log(template, template.length, template.indexOf('.html'));
                     //if template is an url
                     if (template.indexOf('.html') === template.length - 5) {
-                        require(['text!' + template], function (txt) {
+                        require(['text!' + template], function(txt) {
                             def.resolve(_this.compileTemplate(txt));
                         });
-                    } else
+                    } else;
                     //if template is an id of script element in html page
                     if (template.indexOf('#') === 0) {
                         def.resolve(_this.compileTemplate($(template).html()));
@@ -278,26 +280,26 @@ define('base/app',['require', 'base/router'], function (require, Router) {
             }
             return def;
         },
-        cacheTemplate: function (def, hash) {
+        cacheTemplate: function(def, hash) {
             templateIndex[hash] = def;
         },
-        cacheData: function (def, hash) {
+        cacheData: function(def, hash) {
             dataIndex[hash] = def;
         },
-        log: function () {
+        log: function() {
             console.log.apply(console, arguments);
         },
-        getString: function (str) {
+        getString: function(str) {
             return str;
         },
-        parseSuccessResponse: function (resp) {
+        parseSuccessResponse: function(resp) {
             return resp;
         },
-        parseFailureResponse: function (resp) {
+        parseFailureResponse: function(resp) {
             return resp;
         },
         appModel: new Backbone.Model(),
-        getRequestDef: function (config) {
+        getRequestDef: function(config) {
             var _this = this;
             var attributeName = config.name || '';
             var responseParser = config.parser;
@@ -309,135 +311,139 @@ define('base/app',['require', 'base/router'], function (require, Router) {
 
             if (!def) {
                 def = $.Deferred();
-                $.ajax(config).done(function (resp) {
+                $.ajax(config).done(function(resp) {
                     var parserFunc = responseParser || _this.parseSuccessResponse;
-                    var parsedResponse = parserFunc(resp)
+                    var parsedResponse = parserFunc(resp);
                     if (parsedResponse.errors) {
                         def.reject(parsedResponse.errors);
                     } else {
                         _this.cacheData(def, hash);
                         def.resolve(parsedResponse);
                     }
-                }).fail(function (resp) {
+                }).fail(function(resp) {
                         var parserFunc = responseParser || _this.parseFailureResponse;
-                        var parsedResponse = parserFunc(resp)
+                        var parsedResponse = parserFunc(resp);
                         def.reject(parsedResponse.errors);
-                    })
+                    });
 
             }
             return def;
         },
-        makeRequest:function(task, callback){
+        makeRequest: function(task, callback) {
             var def = this.getRequestDef(task);
-            def.done(function(results){
-                callback(null,results)
-            })
-            def.fail(function(errors){
+            def.done(function(results) {
+                callback(null, results);
+            });
+            def.fail(function(errors) {
                 callback(errors);
             });
         },
-        beautifyId:function(s){
-            s = s.replace(/([A-Z])/g, function(s){return ' '+s});
-            return s.replace(/(^.)/g, function(s){return s.toUpperCase()});
+        beautifyId: function(s) {
+            s = s.replace(/([A-Z])/g, function(s) {return ' ' + s});
+            return s.replace(/(^.)/g, function(s) {return s.toUpperCase()});
         },
-        getDataIndex:function(){
+        getDataIndex: function() {
             return dataIndex;
         }
-    }
+    };
 
 
-    var getHash = function (key) {
+    var getHash = function(key) {
         return key.toString();
-    }
+    };
 
-    var getTemplateDefByHash = function (hash) {
+    var getTemplateDefByHash = function(hash) {
         return templateIndex[hash];
-    }
-    var getRequestDefByHash = function (hash) {
+    };
+    var getRequestDefByHash = function(hash) {
         return dataIndex[hash];
-    }
+    };
 
 
     return app;
 
 
-})
-;
-define('base/model',[],function(){
+});
+
+define('base/model',[],function() {
 
     var BaseModel = Backbone.Model.extend({
-        is:function(attribute){
+        is: function(attribute) {
             return this.get(attribute) === true;
         },
-        isNot:function(attribute){
+        isNot: function(attribute) {
             return this.get(attribute) === false;
         },
-        isEqual:function(attribute, value){
+        isEqual: function(attribute, value) {
             return this.get(attribute) === value;
         },
-        isNotEqual:function(attribute, value){
+        isNotEqual: function(attribute, value) {
             return this.get(attribute) !== value;
         },
-        removeSelf:function(){
-            if(this.collection){
+        removeSelf: function() {
+            if (this.collection) {
                 this.collection.remove(this);
             }
         },
-        moveUp:function(){
+        moveUp: function() {
             var coll = this.collection;
-            if(!coll){
+            if (!coll) {
                 return;
             }
             var index = coll.indexOf(this);
-            if(index===0){
+            if (index === 0) {
                 return;
             }
             this.removeSelf();
-            coll.add(this, {at:index-1});
+            coll.add(this, {at: index - 1});
         },
-        moveDown:function(){
+        moveDown: function() {
             var coll = this.collection;
-            if(!coll){
+            if (!coll) {
                 return;
             }
             var index = coll.indexOf(this);
-            if(index === coll.length-1){
+            if (index === coll.length - 1) {
                 return;
             }
             this.removeSelf();
-            coll.add(this, {at:index+1});
+            coll.add(this, {at: index + 1});
         },
-        getClosest:function(){
+        getClosest: function() {
             var coll = this.collection;
-            if(!coll || coll.length < 2){
+            if (!coll || coll.length < 2) {
                 return;
             }
             var index = coll.indexOf(this);
-            var prev = coll.at(index-1);
-            if(prev){
+            var prev = coll.at(index - 1);
+            if (prev) {
                 return prev;
-            }else{
-                return coll.at(index+1);
+            }else {
+                return coll.at(index + 1);
             }
         }
     });
 
     return BaseModel;
 });
-define('base/view',['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) {
+
+define('base/view',['base/app', 'base/model', 'base/util'], function(app, BaseModel, util) {
 
     var BaseView = Backbone.View.extend({
-        constructor: function (options) {
+        constructor: function(options) {
             var _this = this;
             Backbone.View.call(_this, options);
-            _.each(setupFunctions, function (func) {
+            _.each(setupFunctions, function(func) {
                 func.call(_this, options);
-            })
+            });
         },
-        render: function () {
+        render: function() {
             var _this = this;
             _this.beforeRender();
-            app.getTemplateDef(_this.getTemplate()).done(function (templateFunction) {
+            _this.loadMeta().then(function(){
+                console.log(arguments);
+            });
+            app.getTemplateDef(_this.getTemplate()).done(function(templateFunction) {
                 if (!_this.model) {
                     _this.model = new BaseModel();
                 }
@@ -451,48 +457,45 @@ define('base/view',['base/app', 'base/model', 'base/util'], function (app, BaseM
             });
             return _this;
         },
-        postRender: function () {
+        postRender: function() {
 
         },
-        beforeRender: function () {
+        beforeRender: function() {
 
         },
-        renderTemplate: function (templateFunction) {
+        renderTemplate: function(templateFunction) {
             this.$el.html(templateFunction(this.model.toJSON()));
         },
-        loadMeta: function () {
-            return $.when([]);
-        },
-        getOption: function (option) {
+        getOption: function(option) {
             return this.options[option];
         },
-        actionHandler: function () {
+        actionHandler: function() {
 
         },
-        loadingHandler:function(isLoading){
+        loadingHandler: function(isLoading) {
             this.$el.toggleClass('loading', isLoading);
         },
-        addMethod:function(methodName, func){
-            if(!this[methodName]){
+        addMethod: function(methodName, func) {
+            if (!this[methodName]) {
                 this[methodName] = func;
             }
         }
     });
 
 
-    var bindDataEvents = function () {
+    var bindDataEvents = function() {
         var _this = this;
         var modelOrCollection = _this.model || _this.collection;
         var eventList, _this;
         eventList = _this.dataEvents;
-        _.each(eventList, function (handler, event) {
+        _.each(eventList, function(handler, event) {
             var events, handlers, splitter;
             splitter = /\s+/;
             handlers = handler.split(splitter);
             events = event.split(splitter);
-            _.each(handlers, function (shandler) {
-                _.each(events, function (sevent) {
-                    modelOrCollection.on(sevent, function () {
+            _.each(handlers, function(shandler) {
+                _.each(events, function(sevent) {
+                    modelOrCollection.on(sevent, function() {
                         if (_this[shandler]) {
                             var args = Array.prototype.slice.call(arguments);
                             args.unshift(sevent);
@@ -504,9 +507,9 @@ define('base/view',['base/app', 'base/model', 'base/util'], function (app, BaseM
                 });
             });
         });
-    }
+    };
 
-    var setupStateEvents = function () {
+    var setupStateEvents = function() {
         var _this = this;
         var stateConfigs = _this.getOption('states');
         if (!stateConfigs) {
@@ -517,25 +520,25 @@ define('base/view',['base/app', 'base/model', 'base/util'], function (app, BaseM
         var statedView;
 
 
-        var cleanUpState = function () {
+        var cleanUpState = function() {
             if (statedView) {
                 statedView.off();
                 statedView.remove();
             }
 
-        }
+        };
 
-        var renderState = function (StateView) {
+        var renderState = function(StateView) {
             statedView = util.createView({
                 View: StateView,
                 model: _this.model,
                 parentEl: _this.$('.state-view')
             });
-        }
+        };
 
-        _this.setState = function (toState) {
+        _this.setState = function(toState) {
             if (typeof toState === 'string') {
-                if(state === toState){
+                if (state === toState) {
                     return;
                 }
                 state = toState;
@@ -544,78 +547,78 @@ define('base/view',['base/app', 'base/model', 'base/util'], function (app, BaseM
                     cleanUpState();
                     renderState(StateView);
                 } else {
-                    throw new Error('Invalid State')
+                    throw new Error('Invalid State');
                 }
 
             } else {
-                throw new Error('state should be a string')
+                throw new Error('state should be a string');
             }
-        }
+        };
 
-        _this.getState = function () {
+        _this.getState = function() {
             return state;
-        }
+        };
 
-    }
+    };
 
-    var setupTemplateEvents = function () {
-        (function (that) {
+    var setupTemplateEvents = function() {
+        (function(that) {
             var template = that.getOption('template') || that.template;
             //if (template) {
-            that.setTemplate = function (newTemplate) {
+            that.setTemplate = function(newTemplate) {
                 template = newTemplate;
                 that.render();
-            }
+            };
 
-            that.getTemplate = function () {
+            that.getTemplate = function() {
                 return template;
-            }
+            };
             //}
         })(this);
-    }
+    };
 
-    var setupSubViews = function () {
+    var setupSubViews = function() {
         var _this = this;
         var views = {};
 
         var subViewConfigs = _this.getOption('views');
 
-        if(!subViewConfigs){
-            return ;
+        if (!subViewConfigs) {
+            return;
         }
 
-        _.each(subViewConfigs, function (viewConfig, viewName) {
+        _.each(subViewConfigs, function(viewConfig, viewName) {
             if (viewConfig.parentEl && typeof viewConfig.parentEl === 'string') {
                 viewConfig.parentEl = _this.$(viewConfig.parentEl);
             }
             views[viewName] = util.createView(viewConfig);
-        })
+        });
 
-        _this.getSubView = function (id) {
-            var subView = views[id]
+        _this.getSubView = function(id) {
+            var subView = views[id];
             if (subView) {
                 return subView;
             } else {
                 throw new Error('No View Defined for id :' + id);
             }
-        }
+        };
 
-    }
+    };
 
 
-    var setupAttributeWatch = function () {
+    var setupAttributeWatch = function() {
         var _this = this;
         var model = _this.model;
         if (model) {
             model.on('change', _.bind(watchAttributes, _this));
-            syncAttributes.call(_this, model)
+            syncAttributes.call(_this, model);
         }
 
-    }
+    };
 
-    var watchAttributes = function (model) {
+    var watchAttributes = function(model) {
         var changes = model.changedAttributes();
-        _.each(changes, function (value, attribute) {
+        _.each(changes, function(value, attribute) {
             var handler = this[attribute + 'ChangeHandler'];
             if (handler && typeof handler === 'function') {
                 handler.call(this, value);
@@ -626,11 +629,11 @@ define('base/view',['base/app', 'base/model', 'base/util'], function (app, BaseM
         if (changeHandler && typeof changeHandler === 'function') {
             changeHandler.call(this, changes);
         }
-    }
+    };
 
-    var syncAttributes = function (model) {
+    var syncAttributes = function(model) {
         var changes = model.toJSON();
-        _.each(changes, function (value, attribute) {
+        _.each(changes, function(value, attribute) {
             var handler = this[attribute + 'ChangeHandler'];
             if (handler && typeof handler === 'function') {
                 handler.call(this, value);
@@ -641,17 +644,17 @@ define('base/view',['base/app', 'base/model', 'base/util'], function (app, BaseM
         if (changeHandler && typeof changeHandler === 'function') {
             changeHandler.call(this, changes);
         }
-    }
+    };
 
-    var setupActionNavigateAnchors = function () {
+    var setupActionNavigateAnchors = function() {
         var _this = this;
-        var verifyPropagation = function(e){
-            if(e.actionHandled){
+        var verifyPropagation = function(e) {
+            if (e.actionHandled) {
                 e.stopPropagation();
                 $('body').trigger('click');
             }
-        }
-        _this.$el.on('click', '.action', function (e) {
+        };
+        _this.$el.on('click', '.action', function(e) {
             e.preventDefault();
             var target = $(e.currentTarget);
             var action = target.attr('href').substr(1);
@@ -659,60 +662,61 @@ define('base/view',['base/app', 'base/model', 'base/util'], function (app, BaseM
             verifyPropagation(e);
         });
 
-        _this.$el.on('click', '.dummy', function (e) {
+        _this.$el.on('click', '.dummy', function(e) {
             e.preventDefault();
         });
-    }
+    };
 
-    var setupOnChangeRender = function () {
+    var setupOnChangeRender = function() {
         var _this = this;
         if (this.getOption('renderOnChange') === true) {
-            _this.model.on('change', function () {
+            _this.model.on('change', function() {
                 _this.render.call(_this);
-            })
+            });
         }
-    }
+    };
 
 
 
 
-    var setupMetaRequests = function(){
+    var setupMetaRequests = function() {
         var _this = this;
         var requestConfigs = _this.getOption('requests') || _this.requests;
         var loading = false;
 
         var defArray = [];
 
-        var addRequest = function(config, callback){
+        var addRequest = function(config, callback) {
             var def = app.getRequestDef(config);
             defArray.push(def);
             def.done(callback);
             def.fail(callback);
             return def;
-        }
+        };
 
         var requestQue = util.aSyncQueue(addRequest);
-        requestQue.added = function(){
+        requestQue.added = function() {
             loading = true;
             _this.loadingHandler.call(_this, loading);
-        }
-        requestQue.drain = function(){
+        };
+        requestQue.drain = function() {
             loading = false;
+            defArray=[];
             _this.loadingHandler.call(_this, loading);
-        }
+        };
 
 
-        requestQue.push(requestConfigs || [], function(data){
+        requestQue.push(requestConfigs || [], function(data) {
             _this.model.set(data);
-        })
+        });
 
-        _this.loadMeta = function(){
-            return $.when(defArray);
-        }
+        _this.loadMeta = function() {
+            return $.when.apply(null, defArray);
+        };
 
-        _this.addRequest = function(config, callback){
-            requestQue.push(config, callback)
-        }
+        _this.addRequest = function(config, callback) {
+            requestQue.push(config, callback);
+        };
 
         /*
 
@@ -724,7 +728,7 @@ define('base/view',['base/app', 'base/model', 'base/util'], function (app, BaseM
         */
 
 
-    }
+    };
 
     var setupFunctions = [bindDataEvents, setupTemplateEvents, setupAttributeWatch, setupActionNavigateAnchors, setupOnChangeRender, setupStateEvents, setupMetaRequests];
 
@@ -1096,159 +1100,162 @@ define('text',['module'], function (module) {
 });
 define('text!widgets/header/header.html',[],function () { return '<div>\n    <a href="http://ravihamsa.com">Ravi Hamsa</a>\n    <ul class="nav nav-pills">\n        <li class="examples"><a href="#examples/landing">Examples</a></li>\n        <li class="studio"><a href="#studio">Studio</a></li>\n    </ul>\n</div>';});
 
-define('widgets/header',['base/view', 'base/model', 'text!./header/header.html'],function(BaseView, BaseModel, template){
+define('widgets/header',['base/view', 'base/model', 'text!./header/header.html'], function(BaseView, BaseModel, template) {
 
     var HeaderView = BaseView.extend({
-        template:template,
-        appIdChangeHandler:function(value){
+        template: template,
+        appIdChangeHandler: function(value) {
             this.$('.active').removeClass('active');
-            this.$('.'+value).addClass('active');
+            this.$('.' + value).addClass('active');
         }
     });
 
     return {
-        View:HeaderView,
-        Model:BaseModel
+        View: HeaderView,
+        Model: BaseModel
     };
 });
-define('base/root',['base/view', 'base/model', 'widgets/header'],function(BaseView, BaseModel, Header){
+
+define('base/root',['base/view', 'base/model', 'widgets/header'], function(BaseView, BaseModel, Header) {
 
     var RootView = BaseView.extend({
-        postRender:function(){
+        postRender: function() {
             var header = new Header.View({
-                el:this.$('#header'),
-                model:this.model
+                el: this.$('#header'),
+                model: this.model
             });
             header.render();
         },
-        changeHandler:function(changes){
+        changeHandler: function(changes) {
             var attr = this.model.toJSON();
-            if(changes.appId){
-                require(['apps/'+attr.appId],function(){
-                    require(['apps/'+attr.appId+'/app'], function(app){
+            if (changes.appId) {
+                require(['apps/' + attr.appId], function() {
+                    require(['apps/' + attr.appId + '/app'], function(app) {
                         app.renderPage(attr.pageId, attr);
-                    })
-                })
-            }else if(changes.pageId){
-                require(['apps/'+attr.appId+'/app'], function(app){
+                    });
+                });
+            }else if (changes.pageId) {
+                require(['apps/' + attr.appId + '/app'], function(app) {
                     app.renderPage(attr.pageId, attr);
-                })
+                });
             }
         }
     });
 
     return {
-        View:RootView
-    }
+        View: RootView
+    };
 
-})
-;
-define('base/itemView',['base/view'],function(BaseView){
+});
+
+define('base/itemView',['base/view'], function(BaseView) {
 
     var ItemView = BaseView.extend({
-        tagName:'li',
-        template:'{{name}}'
+        tagName: 'li',
+        template: '{{name}}'
     });
 
     return ItemView;
 });
-define('base/collectionView',['base/view', 'base/itemView', 'base/util'], function (BaseView, BaseItemView, util) {
+
+define('base/collectionView',['base/view', 'base/itemView', 'base/util'], function(BaseView, BaseItemView, util) {
 
 
 
     var CollectionView = BaseView.extend({
         tagName: 'ul',
-        dataEvents:{
+        dataEvents: {
             'add' : 'addHandler',
-            'remove':'removeHandler'
+            'remove': 'removeHandler'
         },
-        postRender: function () {
+        postRender: function() {
             collectionRender.call(this);
         },
-        addHandler:function(event, model){
-            this.addItem(model)
+        addHandler: function(event, model) {
+            this.addItem(model);
         },
-        removeHandler:function(event,model){
-            this.removeItem(model)
+        removeHandler: function(event,model) {
+            this.removeItem(model);
         }
     });
 
-    var collectionRender = function(){
+    var collectionRender = function() {
         var _this = this;
         var viewArray = {};
         var el = this.$el;
         var coll = this.collection;
 
-        _this.addItem = function(model, containerEl){
-            if(!containerEl){
+        _this.addItem = function(model, containerEl) {
+            if (!containerEl) {
                 containerEl = el;
             }
             var index = coll.indexOf(model);
 
             var ItemView = _this.getOption('itemView') || BaseItemView;
-            var view = util.createView({model: model, className:'id-'+model.id, View:ItemView});
+            var view = util.createView({model: model, className: 'id-' + model.id, View: ItemView});
             viewArray[model.id] = view;
 
             var index = coll.indexOf(model);
-            if(index=== 0){
+            if (index === 0) {
                 view.$el.prependTo(containerEl);
-            }else if(index >= coll.length -1){
+            }else if (index >= coll.length - 1) {
                 view.$el.appendTo(containerEl);
-            }else{
-                var beforeView = _this.getModelViewAt(coll.at(index-1).id);
-                view.$el.insertAfter(beforeView.$el)
+            }else {
+                var beforeView = _this.getModelViewAt(coll.at(index - 1).id);
+                view.$el.insertAfter(beforeView.$el);
             }
 
-        }
+        };
 
-        _this.removeItem = function(model){
+        _this.removeItem = function(model) {
             var view = _this.getModelViewAt(model.id);
             view.remove();
-        }
+        };
 
-        _this.getModelViewAt =function(id){
+        _this.getModelViewAt = function(id) {
             return viewArray[id];
-        }
+        };
 
         var fragment = document.createDocumentFragment();
-        coll.each(function (model, index) {
+        coll.each(function(model, index) {
             _this.addItem(model, fragment);
         });
         this.$el.append(fragment);
-    }
+    };
 
     return CollectionView;
 });
 
-define('base/collection',[ 'base/model'],function(BaseModel){
+define('base/collection',['base/model'], function(BaseModel) {
 
     var BaseCollection = Backbone.Collection.extend({
-        model:BaseModel
+        model: BaseModel
     });
 
     return BaseCollection;
 });
-define('base/helpers',['base/app'],function(app){
+
+define('base/helpers',['base/app'], function(app) {
 
     Handlebars.registerHelper('elementLabel', function(element) {
         return element.name;
     });
 
     Handlebars.registerHelper('stringify', function(obj) {
-        return JSON.stringify(obj)
+        return JSON.stringify(obj);
     });
 
     Handlebars.registerHelper('toggleClass', function(attributeName) {
 
-        if(this[attributeName]){
+        if (this[attributeName]) {
             return attributeName;
         }
     });
 
 
-})
-;
-define('base',['require','base/view','base/root','base/collectionView','base/itemView','base/model','base/collection','base/util','base/app','base/router','base/helpers'],function (require) {
+});
+
+define('base',['require','base/view','base/root','base/collectionView','base/itemView','base/model','base/collection','base/util','base/app','base/router','base/helpers'],function(require) {
     return {
         View: require('base/view'),
         Root: require('base/root'),
@@ -1256,11 +1263,11 @@ define('base',['require','base/view','base/root','base/collectionView','base/ite
         ItemView: require('base/itemView'),
         Model: require('base/model'),
         Collection: require('base/collection'),
-        util:require('base/util'),
-        app:require('base/app'),
-        Router:require('base/router'),
-        helpers:require('base/helpers')
-    }
+        util: require('base/util'),
+        app: require('base/app'),
+        Router: require('base/router'),
+        helpers: require('base/helpers')
+    };
 
 });
 
@@ -1271,17 +1278,17 @@ define('base',['require','base/view','base/root','base/collectionView','base/ite
  * Time: 4:18 PM
  * To change this template use File | Settings | File Templates.
  */
-define('widgets/form/validator',['base/app'],function(app){
+define('widgets/form/validator',['base/app'], function(app) {
     
 
 
 
-    var validateValue=function(value, validationRules){
+    var validateValue = function(value, validationRules) {
 
-        var errors=[];
+        var errors = [];
         var errorRule;
 
-        var isValid = _.every(validationRules, function (rule) {
+        var isValid = _.every(validationRules, function(rule) {
             var isValidForRule = validationRuleMethods[rule.expr].call(this, rule, value);
             if (!isValidForRule) {
                 errors.push(rule);
@@ -1291,66 +1298,66 @@ define('widgets/form/validator',['base/app'],function(app){
         });
 
         return {
-            isValid:isValid,
-            errors:errors,
-            errorRule:errorRule
+            isValid: isValid,
+            errors: errors,
+            errorRule: errorRule
         };
     };
 
     var validationRuleMethods = {
-        'req': function (rule, value) {
+        'req': function(rule, value) {
             return !_.isEmpty(value);
         },
-        'digits': function (rule, value) {
+        'digits': function(rule, value) {
             return (/^\d{5}$/).test(value);
         },
-        'alphanumeric': function (rule, value) {
+        'alphanumeric': function(rule, value) {
             var ck_alphaNumeric = /^\w+$/;
             return ck_alphaNumeric.test(value);
         },
-        'number': function (rule, value) {
+        'number': function(rule, value) {
             if (value === undefined) {
                 return true;
             }
             var numberVal = +value;
             return numberVal === numberVal;
         },
-        'email': function (rule, value) {
+        'email': function(rule, value) {
             var ck_email = /^([\w\-]+(?:\.[\w\-]+)*)@((?:[\w\-]+\.)*\w[\w\-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
             return ck_email.test($.trim(value));
         },
-        'minlen': function (rule, value) {
+        'minlen': function(rule, value) {
             var min = rule.length;
             return $.trim(String(value)).length >= min;
         },
-        'maxlen': function (rule, value, exprvalue) {
+        'maxlen': function(rule, value, exprvalue) {
             var max = rule.length;
             return $.trim(String(value)).length <= max;
         },
-        'lt': function (rule, value, exprvalue) {
+        'lt': function(rule, value, exprvalue) {
             var target = parseFloat(exprvalue);
             var curvalue = parseFloat(value);
             return curvalue < target;
         },
-        'gt': function (rule, value, exprvalue) {
+        'gt': function(rule, value, exprvalue) {
             var target = parseFloat(exprvalue);
             var curvalue = parseFloat(value);
             return curvalue > target;
         },
-        'eq': function (rule, value, exprvalue) {
+        'eq': function(rule, value, exprvalue) {
             return exprvalue === value;
         },
-        'neq': function (rule, value) {
+        'neq': function(rule, value) {
             return rule.value !== value;
         },
-        'url': function (rule, value) {
+        'url': function(rule, value) {
             if (value === '') {
                 return true;
             }
             var ck_url = /(http|https|market):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/i;
             return ck_url.test($.trim(value));
         },
-        'emaillist': function (rule, value) {
+        'emaillist': function(rule, value) {
             var emails = value.split(',');
             var ck_email = /^([\w\-]+(?:\.[\w\-]+)*)@((?:[\w\-]+\.)*\w[\w\-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
             for (var i = 0; i < emails.length; i++) {
@@ -1360,7 +1367,7 @@ define('widgets/form/validator',['base/app'],function(app){
             }
             return true;
         },
-        'function': function (rule, value) {
+        'function': function(rule, value) {
             var func = rule.func;
             return func.call(null, value);
         }
@@ -1370,10 +1377,11 @@ define('widgets/form/validator',['base/app'],function(app){
 
 
     return {
-        validateValue:validateValue,
-        validationRuleMethods:validationRuleMethods
+        validateValue: validateValue,
+        validationRuleMethods: validationRuleMethods
     };
 });
+
 define('text!widgets/form/inputView.html',[],function () { return '<div class="control-group">\n    <label class="control-label">\n        {{elementLabel this}}\n    </label>\n\n    <div class="controls type-{{type}}">\n        <input type="{{type}}" name="{{name}}" value="{{value}}" class="el-{{name}}"/>\n        <span class="help-inline"></span>\n    </div>\n</div>';});
 
 /**
@@ -1383,7 +1391,7 @@ define('text!widgets/form/inputView.html',[],function () { return '<div class="c
  * Time: 11:36 AM
  * To change this template use File | Settings | File Templates.
  */
-define('widgets/form/element',['base/app', 'base', 'widgets/form/validator','text!./inputView.html'], function (app, Base, Validator, inputViewTemplate) {
+define('widgets/form/element',['base/app', 'base', 'widgets/form/validator', 'text!./inputView.html'], function(app, Base, Validator, inputViewTemplate) {
     
 
     var DOT_CONTROL_GROUP = '.control-group';
@@ -1407,15 +1415,15 @@ define('widgets/form/element',['base/app', 'base', 'widgets/form/validator','tex
             group: 'elements'
         },
         idAttribute: 'name',
-        updateActive: function () {
+        updateActive: function() {
             var activeRules = this.get('activeRules');
-            var isActive = _.every(activeRules, function (rule) {
+            var isActive = _.every(activeRules, function(rule) {
                 var sourceElement = this.collection.get(rule.element);
                 return activeRuleMethods[rule.expr].call(null, sourceElement, rule);
             }, this);
             this.set('active', isActive);
         },
-        isElementValid: function (skipShowErrors) {
+        isElementValid: function(skipShowErrors) {
             var validationRules = this.get('validationRules');
             var errors = [];
             if (this.isNot('active')) {
@@ -1423,7 +1431,7 @@ define('widgets/form/element',['base/app', 'base', 'widgets/form/validator','tex
             }
 
             var errorRule;
-            var isValid = _.every(validationRules, function (rule) {
+            var isValid = _.every(validationRules, function(rule) {
                 var isValidForRule = Validator.validationRuleMethods[rule.expr].call(this, rule, this.get('value'));
                 if (!isValidForRule) {
                     errors.push(rule);
@@ -1433,7 +1441,7 @@ define('widgets/form/element',['base/app', 'base', 'widgets/form/validator','tex
             }, this);
             //ee.log('isElementValid',this.id, isValid, errorRule);
             this.set('valid', isValid);
-            if(!skipShowErrors) {
+            if (!skipShowErrors) {
                 if (errorRule) {
                     var message = errorRule.message || ('error.' + this.get('name') + '.' + errorRule.expr);
                     this.set('errorCode', message);
@@ -1443,24 +1451,24 @@ define('widgets/form/element',['base/app', 'base', 'widgets/form/validator','tex
             }
             return errors;
         },
-        getSiblingValue:function(siblingName){
-            if(this.collection){
+        getSiblingValue: function(siblingName) {
+            if (this.collection) {
                 return this.collection.get(siblingName).get('value');
             }
         },
-        getSiblingAttribute:function(siblingName, attributeName){
-            if(this.collection){
+        getSiblingAttribute: function(siblingName, attributeName) {
+            if (this.collection) {
                 return this.collection.get(siblingName).get(attributeName);
             }
         },
-        setSiblingAttribute:function(siblingName, attributeName, value){
-            if(this.collection){
-                return this.collection.get(siblingName).set(attributeName,value);
+        setSiblingAttribute: function(siblingName, attributeName, value) {
+            if (this.collection) {
+                return this.collection.get(siblingName).set(attributeName, value);
             }
         },
-        setSiblingValue:function(siblingName, value){
-            if(this.collection){
-                return this.collection.get(siblingName).set('value',value);
+        setSiblingValue: function(siblingName, value) {
+            if (this.collection) {
+                return this.collection.get(siblingName).set('value', value);
             }
         }
     });
@@ -1483,13 +1491,13 @@ define('widgets/form/element',['base/app', 'base', 'widgets/form/validator','tex
         //     this.$('input').attr('type', value);
         // },
 
-        postRender:function(){
+        postRender: function() {
             this.syncAttributes();
         },
-        syncAttributes: function () {
+        syncAttributes: function() {
             var model = this.model;
             var attr = model.toJSON();
-            _.each(attr, function (value, attribute) {
+            _.each(attr, function(value, attribute) {
                 var handler = this[attribute + 'ChangeHandler'];
                 if (handler && typeof handler === 'function') {
                     handler.call(this, model.get(attribute));
@@ -1498,25 +1506,25 @@ define('widgets/form/element',['base/app', 'base', 'widgets/form/validator','tex
             this.updateValue(true);
         },
 
-        disabledChangeHandler: function (value) {
+        disabledChangeHandler: function(value) {
             this.$el.toggleClass('disabled', value);
             this.$('input').attr('disabled', value);
         },
-        readonlyChangeHandler: function (value) {
+        readonlyChangeHandler: function(value) {
             this.$el.toggleClass('readonly', value);
             this.$('input').attr('readonly', value);
         },
-        validChangeHandler: function (value) {
+        validChangeHandler: function(value) {
             this.$(DOT_CONTROL_GROUP).toggleClass(INVALID_CLASS, !value);
         },
-        activeChangeHandler: function (value) {
+        activeChangeHandler: function(value) {
             this.$el.toggle(value);
         },
-        valueChangeHandler: function (value) {
+        valueChangeHandler: function(value) {
             this.$('input').val(value);
            // console.log(value, 'txt');
         },
-        errorCodeChangeHandler: function (errorCode) {
+        errorCodeChangeHandler: function(errorCode) {
             var el = this.$(DOT_HELP_INLINE);
             //console.log('errorCodeChangeHandler',this.model.id, el, errorCode);
             if (errorCode === '') {
@@ -1528,46 +1536,46 @@ define('widgets/form/element',['base/app', 'base', 'widgets/form/validator','tex
                 el.html(app.getString(errorCode));
             }
         },
-        nameChangeHandler: function (value) {
+        nameChangeHandler: function(value) {
             this.$el.addClass('element-' + value);
         },
-        valueFunction: function () {
+        valueFunction: function() {
             return this.$('input').val();
         },
-        updateValue: function (skipValidate) {
+        updateValue: function(skipValidate) {
             this.model.set('value', this.valueFunction());
             if (skipValidate !== true) {
                 this.model.isElementValid();
             }
 
         },
-        setFocus:function(){
+        setFocus: function() {
             var form = this.$el.closest('form');
             form.find('.focused').removeClass('focused');
             this.$el.addClass('focused');
         },
-        removeFocus:function(){
+        removeFocus: function() {
             this.$el.removeClass('focused');
         }
     });
 
 
     var activeRuleMethods = {
-        'eq': function (source, rule) {
+        'eq': function(source, rule) {
             return source.isEqual('value', rule.value);
         },
-        'valid': function (source) {
+        'valid': function(source) {
             source.isElementValid(true);
             return source.is('valid');
         },
-        'isIn': function (source, rule) {
+        'isIn': function(source, rule) {
             var value = source.get('value');
             return rule.value.indexOf(value) !== -1;
         },
-        'neq': function (source, rule) {
+        'neq': function(source, rule) {
             return source.isNotEqual('value', rule.value);
         },
-        'function': function (source, rule) {
+        'function': function(source, rule) {
             var func = rule.func;
             return func.apply(null, arguments);
         }
@@ -1580,26 +1588,28 @@ define('widgets/form/element',['base/app', 'base', 'widgets/form/validator','tex
         Collection: ElementCollection
     };
 });
+
 define('text!widgets/messageStack/messageStack.html',[],function () { return '<div>\n\n</div>';});
 
-define('widgets/messageStack',['base', 'text!./messageStack/messageStack.html'],function(Bone, template){
+define('widgets/messageStack',['base', 'text!./messageStack/messageStack.html'], function(Bone, template) {
 
     var MessageStack = Bone.View.extend({
-        template:template
+        template: template
 
     });
 
     var MessageStackModel = Bone.Model.extend({
-        removeAllMessages:function(){
+        removeAllMessages: function() {
 
         }
     });
 
     return {
-        View:MessageStack,
-        Model:MessageStackModel
+        View: MessageStack,
+        Model: MessageStackModel
     };
 });
+
 define('text!widgets/form/checkListView.html',[],function () { return '<div class="control-group">\n    <label class="control-label">\n        {{elementLabel this}}\n    </label>\n\n    <div class="controls">\n        {{#each options}}\n        <label class="checkbox inline">\n            <input type="checkbox" name="{{id}}" value="{{id}}" class="el-{{name}}"/>{{name}}\n        </label>\n        {{/each}}\n        <span class="help-inline"></span>\n    </div>\n</div>';});
 
 define('text!widgets/form/radioListView.html',[],function () { return '<div class="control-group">\n    <label class="control-label">\n        {{elementLabel this}}\n    </label>\n\n    <div class="controls">\n        {{#each options}}\n        <label class="radio inline">\n            <input type="radio" name="{{../name}}" value="{{id}}" class="el-{{name}}"/>{{name}}\n        </label>\n        {{/each}}\n        <span class="help-inline"></span>\n    </div>\n</div>';});
@@ -1627,7 +1637,7 @@ define('widgets/form',[
     'text!./form/selectView.html',
     'text!./form/textAreaView.html',
     'text!./form/buttonView.html'
-],function(app, Base, Element, MessageStack, checkListTemplate, radioListTemplate, selectViewTemplate, textAreaTemplate, buttonViewTemplate){
+], function(app, Base, Element, MessageStack, checkListTemplate, radioListTemplate, selectViewTemplate, textAreaTemplate, buttonViewTemplate) {
     
 
     var ElementView = Element.View;
@@ -1635,33 +1645,33 @@ define('widgets/form',[
     var ElementCollection = Element.Collection;
 
     var ButtonView = ElementView.extend({
-        template:buttonViewTemplate,
-        valueFunction: function () {
+        template: buttonViewTemplate,
+        valueFunction: function() {
             return;
         },
-        valueChangeHandler: function (value) {
+        valueChangeHandler: function(value) {
             return;
         }
     });
 
     var CheckboxView = ElementView.extend({
-        valueFunction: function () {
+        valueFunction: function() {
             return this.$('input').is(':checked');
         },
-        valueChangeHandler: function (value) {
+        valueChangeHandler: function(value) {
             this.$('input').attr('checked', value);
         }
     });
     var TextAreaView = ElementView.extend({
-        template:textAreaTemplate,
+        template: textAreaTemplate,
         events: {
             'change textarea': 'updateValue',
             'blur textarea': 'updateValue'
         },
-        valueFunction: function () {
+        valueFunction: function() {
             return this.$('textarea').val();
         },
-        valueChangeHandler: function (value) {
+        valueChangeHandler: function(value) {
             this.$('textarea').val(value);
         }
     });
@@ -1670,19 +1680,19 @@ define('widgets/form',[
         template: selectViewTemplate,
         events: {
             'change select': 'updateValue',
-            'blur select': function(){
+            'blur select': function() {
                 this.updateValue();
                 this.removeFocus();
             },
             'click': 'setFocus'
         },
-        valueFunction: function () {
+        valueFunction: function() {
             return this.$('select').val();
         },
-        valueChangeHandler: function (value) {
+        valueChangeHandler: function(value) {
             this.$('select').val(value);
         },
-        disabledChangeHandler: function (value) {
+        disabledChangeHandler: function(value) {
             this.$el.toggleClass('disabled', value);
             this.$('select').attr('disabled', value);
         }
@@ -1690,30 +1700,30 @@ define('widgets/form',[
 
 
     var RadioListView = ElementView.extend({
-        template:radioListTemplate,
-        valueFunction: function () {
+        template: radioListTemplate,
+        valueFunction: function() {
             return this.$('input:checked').val();
         },
-        valueChangeHandler: function (value) {
+        valueChangeHandler: function(value) {
             this.$('input[value=' + value + ']').attr('checked', true);
         }
     });
 
     var CheckListView = ElementView.extend({
         template: checkListTemplate,
-        valueFunction: function () {
+        valueFunction: function() {
             var selectedOptions = this.$('input:checked');
 
-            var valueArr = _.map(selectedOptions, function (option) {
+            var valueArr = _.map(selectedOptions, function(option) {
                 return $(option).val();
             });
 
             return valueArr;
         },
-        valueChangeHandler: function (valueArr) {
+        valueChangeHandler: function(valueArr) {
             //this.$('input[value='+value+']').attr('checked',true);
             if (_.isArray(valueArr)) {
-                _.each(valueArr, function (value) {
+                _.each(valueArr, function(value) {
                     this.$('input[value=' + value + ']').attr('checked', true);
                 }, this);
             }
@@ -1722,42 +1732,42 @@ define('widgets/form',[
 
     var HiddenView = ElementView.extend({
         template: '<input type="hidden" value="{{value}}" name="{{name}}" />',
-        valueChangeHandler: function (value) {
+        valueChangeHandler: function(value) {
             this.$('input').val(value);
             this.$('input').trigger('change');
         },
-        valueFunction:function(){
-            return ''+this.$('input').val();
+        valueFunction: function() {
+            return '' + this.$('input').val();
         }
     });
 
     var ContainerView = ElementView.extend({
         template: ' ',
-        valueChangeHandler: function (value) {
+        valueChangeHandler: function(value) {
             //this.$('input').val(value);
         },
-        valueFunction:function(){
+        valueFunction: function() {
             //return this.$('input').val();
         }
     });
 
     var HiddenJSONView = ElementView.extend({
         template: '<input type="hidden" value="{{value}}" name="{{name}}" />',
-        valueChangeHandler: function (value) {
+        valueChangeHandler: function(value) {
             this.$('input').val(JSON.stringify(value));
             //console.log(value, 'HiddenJSONView');
             this.updateValue();
         },
-        valueFunction:function(){
+        valueFunction: function() {
             return JSON.parse(this.$('input').val());
         }
     });
 
     var CheckboxList = ElementView.extend({
-        valueFunction: function () {
+        valueFunction: function() {
             return this.$('input').is(':checked');
         },
-        valueChangeHandler: function (value) {
+        valueChangeHandler: function(value) {
             this.$('input').attr('checked', value);
         }
     });
@@ -1768,25 +1778,25 @@ define('widgets/form',[
         'checkbox': CheckboxView,
         'radioList': RadioListView,
         'checkList': CheckListView,
-        'hidden':HiddenView,
-        'json':HiddenJSONView,
-        'submit':ButtonView,
-        'container':ContainerView
+        'hidden': HiddenView,
+        'json': HiddenJSONView,
+        'submit': ButtonView,
+        'container': ContainerView
     };
 
-    var getViewByType = function (type) {
+    var getViewByType = function(type) {
         return typeViewIndex[type] || ElementView;
     };
 
-    var updateTypeViewIndex = function (indexObj) {
+    var updateTypeViewIndex = function(indexObj) {
         typeViewIndex = _.extend({}, typeViewIndex, indexObj);
     };
 
     var FormModel = Base.Model.extend({
-        constructor: function () {
+        constructor: function() {
             Base.Model.apply(this, arguments);
             var elements = this.get('elements');
-            elements.on('change', function (model) {
+            elements.on('change', function(model) {
                 var eventName = 'change';
                 var args = Array.prototype.slice.call(arguments, [0]);
                 args[0] = 'elements:' + eventName;
@@ -1795,13 +1805,13 @@ define('widgets/form',[
                 this.trigger.apply(this, args);
             }, this);
 
-            elements.each(function (elementModel) {
+            elements.each(function(elementModel) {
 
                 //add active rules
                 var activeRules = elementModel.get('activeRules');
-                _.each(activeRules, function (rule) {
+                _.each(activeRules, function(rule) {
                     var toWatchElement = elements.get(rule.element);
-                    toWatchElement.on('change:value', function (model, value) {
+                    toWatchElement.on('change:value', function(model, value) {
                         elementModel.updateActive();
                     });
                     elementModel.updateActive();
@@ -1829,16 +1839,16 @@ define('widgets/form',[
         defaults: {
             elements: new ElementCollection()
         },
-        setElementAttribute: function (elementName, attribute, value) {
+        setElementAttribute: function(elementName, attribute, value) {
             var elements = this.get('elements');
             elements.get(elementName).set(attribute, value);
         },
-        getValueObject: function () {
+        getValueObject: function() {
             var elements = this.get('elements');
             var errors = this.validateElements();
             var obj = {};
             if (errors.length === 0) {
-                elements.each(function (model) {
+                elements.each(function(model) {
                     if (model.is('active')) {
                         obj[model.id] = model.get('value');
                     }
@@ -1846,10 +1856,10 @@ define('widgets/form',[
             }
             return obj;
         },
-        validateElements: function () {
+        validateElements: function() {
             var elements = this.get('elements');
             var errors = [];
-            elements.each(function (model) {
+            elements.each(function(model) {
 
                 errors = errors.concat(model.isElementValid());
 
@@ -1864,7 +1874,7 @@ define('widgets/form',[
 
 
     var FormView = Base.View.extend({
-        constructor: function (options) {
+        constructor: function(options) {
             this.typeViewIndex = {};
             Base.View.apply(this, arguments);
         },
@@ -1875,34 +1885,33 @@ define('widgets/form',[
         },
         template: '<div class="form-message-container"></div><form action="{{actionId}}" id="form-{{id}}" class="form-vertical" method=""></form>',
 
-        postRender: function () {
+        postRender: function() {
             this.formEl = this.$('form');
             this.renderGroupContainers();
             this.renderMessageStack();
             var model = this.model;
             var elements = model.get('elements');
-            elements.each(function (elementModel) {
+            elements.each(function(elementModel) {
                 this.addElement(elementModel);
             }, this);
-            return this;
         },
-        addElement: function (model) {
+        addElement: function(model) {
             var attr = model.toJSON();
             var ElementView = this.typeViewIndex[attr.type] || getViewByType(attr.type);
 
             var name = attr.name;
             var view;
             //if element already rendered dont render again
-            var viewEl =  this.$('.element-'+name);
+            var viewEl = this.$('.element-' + name);
 
-            if(viewEl.length !== 0){
+            if (viewEl.length !== 0) {
                 view = new ElementView({
                     model: model,
-                    el:viewEl
+                    el: viewEl
                 });
                 view.afterRender();
                 view.syncAttributes();
-            }else{
+            }else {
                 view = new ElementView({
                     model: model
                 });
@@ -1912,38 +1921,38 @@ define('widgets/form',[
 
 
         },
-        renderGroupContainers: function () {
+        renderGroupContainers: function() {
             var model = this.model;
             var elements = model.get('elements');
             var groupList = _.unique(elements.pluck('group'));
-            _.each(groupList, function (groupName) {
+            _.each(groupList, function(groupName) {
                 if (this.$('.' + groupPrefix + groupName).length === 0) {
                     this.formEl.append('<div class="' + groupPrefix + groupName + '"></div>');
                 }
             }, this);
         },
 
-        renderMessageStack:function(){
+        renderMessageStack: function() {
             var messageStack = new MessageStack.Model();
             var messageStackView = new MessageStack.View({
-                model:messageStack,
-                el:this.$('.form-message-container')
+                model: messageStack,
+                el: this.$('.form-message-container')
             });
             messageStackView.render();
 
-            this.on('showMessages',function(messages){
+            this.on('showMessages', function(messages) {
                 messageStack.removeAllMessages();
-                _.each(messages,function(message){
+                _.each(messages, function(message) {
                     var messageModel = new MessageStack.Model(message);
                     messageStack.addMessage(messageModel.toJSON());
                 });
             });
 
-            this.on('clearMessages',function(error){
+            this.on('clearMessages', function(error) {
                 messageStack.removeAllMessages();
             });
         },
-        formSubmitHandler: function (e) {
+        formSubmitHandler: function(e) {
             e.preventDefault();
 
             this.trigger('clearMessages');
@@ -1952,26 +1961,26 @@ define('widgets/form',[
 
             var actionId = this.model.get('actionId');
 
-            if(this.options.prePostParser){
+            if (this.options.prePostParser) {
                 dataObj = this.options.prePostParser(dataObj);
             }
 
             this.trigger('formSubmit', dataObj);
         },
-        addToTypeViewIndex: function (type, View) {
+        addToTypeViewIndex: function(type, View) {
             this.typeViewIndex[type] = View;
         },
-        submitSuccessHandler:function(){
+        submitSuccessHandler: function() {
             console.log(arguments);
         },
-        submitFailureHandler:function(resp, errors){
-            _.each(errors, function(error){
-                error.messageType='failure';
+        submitFailureHandler: function(resp, errors) {
+            _.each(errors, function(error) {
+                error.messageType = 'failure';
                 error.expires = 0;
             });
             this.trigger('showMessages', errors);
         },
-        setElementValue:function(name, value){
+        setElementValue: function(name, value) {
             var elements = this.model.get('elements');
             elements.get(name).set('value', value);
         }
@@ -1980,76 +1989,76 @@ define('widgets/form',[
 
 
     return {
-        Model:FormModel,
-        View:FormView,
-        ElementModel:ElementModel,
-        ElementCollection:ElementCollection,
-        ElementView:ElementView
+        Model: FormModel,
+        View: FormView,
+        ElementModel: ElementModel,
+        ElementCollection: ElementCollection,
+        ElementView: ElementView
     };
 });
 
-define('list/singleSelect',['base'], function (Base) {
+define('list/singleSelect',['base'], function(Base) {
 
-    var baseUtil =  Base.util;
+    var baseUtil = Base.util;
 
     var View = Base.View.extend({
-        template:'<div class="list-view"></div>',
-        postRender:function(){
+        template: '<div class="list-view"></div>',
+        postRender: function() {
             var items = this.model.get('items');
             var listView = baseUtil.createView({
-                View:Base.CollectionView,
-                collection:items,
-                parentEl:this.$('.list-view'),
-                itemView:this.getOption('ItemView') || ItemView
-            })
+                View: Base.CollectionView,
+                collection: items,
+                parentEl: this.$('.list-view'),
+                itemView: this.getOption('ItemView') || ItemView
+            });
         },
-        actionHandler:function(selectedId){
+        actionHandler: function(selectedId) {
             this.model.setSelectedById(selectedId);
         }
-    })
+    });
 
     var ItemModel = Base.Model.extend({
-        defaults:{
-            selected:false
+        defaults: {
+            selected: false
         },
-        select:function(){
+        select: function() {
             this.set('selected', true);
         },
-        deselect:function(){
+        deselect: function() {
             this.set('selected', false);
         },
-        toggleSelect:function(){
+        toggleSelect: function() {
             var selected = this.is('selected');
             this.set('selected', !selected);
         }
-    })
+    });
 
     var ItemView = Base.View.extend({
-        tagName:'li',
-        className:'single-select-item',
-        template:'<a href="#{{id}}" class="action">{{name}}</a>',
-        changeHandler:function(){
+        tagName: 'li',
+        className: 'single-select-item',
+        template: '<a href="#{{id}}" class="action">{{name}}</a>',
+        changeHandler: function() {
             this.render();
-            this.$el.toggleClass('active',this.model.is('selected'));
+            this.$el.toggleClass('active', this.model.is('selected'));
         }
-    })
+    });
 
     var ItemCollection = Base.Collection.extend({
-        model:ItemModel
+        model: ItemModel
     });
 
 
     var setupFunctions = [setupSingleSelection];
 
     var Model = Base.Model.extend({
-        constructor: function (options) {
+        constructor: function(options) {
             var _this = this;
             Base.Model.call(_this, options);
-            _.each(setupFunctions, function(func){
+            _.each(setupFunctions, function(func) {
                 func.call(_this, options);
-            })
+            });
         }
-    })
+    });
 
     function setupSingleSelection() {
 
@@ -2063,143 +2072,146 @@ define('list/singleSelect',['base'], function (Base) {
             previousSelected = selectedItem;
         }
 
-        var updateSelected = function(){
+        var updateSelected = function() {
             _this.set('selectedItem', selected);
-        }
+        };
 
-        _this.getSelected = function () {
+        _this.getSelected = function() {
             return selected;
-        }
+        };
 
-        _this.prevSelected = function () {
+        _this.prevSelected = function() {
             return previousSelected;
-        }
+        };
 
-        _this.setSelectedById = function(id){
+        _this.setSelectedById = function(id) {
             var curItem = coll.get(id);
-            if(!selected){
+            if (!selected) {
                 selected = curItem;
                 curItem.select();
                 updateSelected();
                 return;
             }
-            if(curItem.id === selected.id){
+            if (curItem.id === selected.id) {
                 return;
             }
             previousSelected = selected;
-            selected =  curItem;
+            selected = curItem;
             previousSelected.deselect();
             curItem.select();
             updateSelected();
-        }
+        };
 
-        _this.setSelected = function(curItem){
-            if(curItem.id === selected.id){
+        _this.setSelected = function(curItem) {
+            if (curItem.id === selected.id) {
                 return;
             }
             previousSelected = selected;
-            selected =  curItem;
+            selected = curItem;
             previousSelected.deselect();
             curItem.select();
             updateSelected();
-        },
+        };
 
-        _this.clearSelection = function(){
+        _this.clearSelection = function() {
             previousSelected = selected;
-            selected =  null;
+            selected = null;
             previousSelected.deselect();
             updateSelected();
-        }
+        };
     }
 
     return {
-        View:View,
-        Model:Model,
-        ItemModel:ItemModel,
-        ItemView:ItemView,
-        ItemCollection:ItemCollection
-    }
+        View: View,
+        Model: Model,
+        ItemModel: ItemModel,
+        ItemView: ItemView,
+        ItemCollection: ItemCollection
+    };
 
 });
+
 define('widgets/tab',[
     'base/app',
     'base',
     'list/singleSelect'
     ],
-    function(app, Base, SingleSelect){
+    function(app, Base, SingleSelect) {
 
-        var baseUtil =  Base.util;
+        var baseUtil = Base.util;
 
         var NavItemView = Base.View.extend({
-            tagName:'li',
-            template:'<a href="#{{id}}" class="action">{{name}}</a>',
-            changeHandler:function(){
-                this.$el.toggleClass('active',this.model.is('selected'));
+            tagName: 'li',
+            template: '<a href="#{{id}}" class="action">{{name}}</a>',
+            changeHandler: function() {
+                this.$el.toggleClass('active', this.model.is('selected'));
             }
-        })
+        });
 
         var TabItemView = Base.View.extend({
-            changeHandler:function(){
+            changeHandler: function() {
                 this.$el.toggle(this.model.is('selected'));
             }
-        })
+        });
 
         var View = SingleSelect.View.extend({
-            template:'<div class="prop-tabs"><ul class="ib-list"></ul></div><div class="tab-panes"></div> ',
-            postRender:function(){
+            template: '<div class="prop-tabs"><ul class="ib-list"></ul></div><div class="tab-panes"></div> ',
+            postRender: function() {
                 var items = this.model.get('items');
                 var navListView = baseUtil.createView({
-                    View:Base.CollectionView,
-                    collection:items,
-                    el:this.$('.ib-list'),
-                    itemView:NavItemView
-                })
+                    View: Base.CollectionView,
+                    collection: items,
+                    el: this.$('.ib-list'),
+                    itemView: NavItemView
+                });
 
                 var tabListView = baseUtil.createView({
-                    View:Base.CollectionView,
-                    tagName:'div',
-                    collection:items,
-                    el:this.$('.tab-panes'),
-                    itemView:TabItemView
-                })
+                    View: Base.CollectionView,
+                    tagName: 'div',
+                    collection: items,
+                    el: this.$('.tab-panes'),
+                    itemView: TabItemView
+                });
 
 
             },
-            actionHandler:function(selectedId){
+            actionHandler: function(selectedId) {
                 this.model.setSelectedById(selectedId);
             }
-        })
+        });
 
 
         return {
-            View:View,
-            Model:SingleSelect.Model
-        }
+            View: View,
+            Model: SingleSelect.Model
+        };
 
     });
-define('base-list-widgets',['require','widgets/form','widgets/header','widgets/messageStack','widgets/tab'],function (require) {
+
+define('base-list-widgets',['require','widgets/form','widgets/header','widgets/messageStack','widgets/tab'],function(require) {
 
     return {
         Form: require('widgets/form'),
         Header: require('widgets/header'),
         MessageStack: require('widgets/messageStack'),
         Tab: require('widgets/tab')
-    }
+    };
 });
-define('list/multiSelect',['base', 'list/singleSelect'], function (Base, SingleSelect) {
+
+define('list/multiSelect',['base', 'list/singleSelect'], function(Base, SingleSelect) {
 
 
     var setupFunctions = [setupMultiSelection];
 
     var Model = Base.Model.extend({
-        constructor: function (options) {
+        constructor: function(options) {
             var _this = this;
             Base.Model.call(_this, options);
-            _.each(setupFunctions, function(func){
+            _.each(setupFunctions, function(func) {
                 func.call(_this, options);
-            })
+            });
         }
-    })
+    });
 
 
     function setupMultiSelection() {
@@ -2210,54 +2222,55 @@ define('list/multiSelect',['base', 'list/singleSelect'], function (Base, SingleS
 
 
 
-        _this.getSelected = function () {
+        _this.getSelected = function() {
             return selected;
-        }
+        };
 
-        _this.setSelectedById = function(id){
+        _this.setSelectedById = function(id) {
             var curItem = coll.get(id);
             curItem.toggleSelect();
             updateSelected();
-        }
+        };
 
-        _this.setSelected = function(curItem){
+        _this.setSelected = function(curItem) {
             curItem.toggleSelect();
             updateSelected();
-        }
+        };
 
-        _this.selectAll = function(){
-            coll.each(function(model){
+        _this.selectAll = function() {
+            coll.each(function(model) {
                 model.select();
-            })
+            });
             updateSelected();
-        }
+        };
 
-        _this.selectNone = function(){
-            coll.each(function(model){
+        _this.selectNone = function() {
+            coll.each(function(model) {
                 model.deselect();
-            })
+            });
             updateSelected();
-        }
-        var updateSelected = function(){
+        };
+        var updateSelected = function() {
             selected = coll.where({selected: true});
             _this.set('selectedCount', selected.length);
-        }
+        };
 
         updateSelected();
     }
 
     return {
-        View:SingleSelect.View,
-        Model:Model,
-        ItemView:SingleSelect.ItemView,
-        ItemCollection:SingleSelect.ItemCollection
-    }
+        View: SingleSelect.View,
+        Model: Model,
+        ItemView: SingleSelect.ItemView,
+        ItemCollection: SingleSelect.ItemCollection
+    };
 
 });
-define('list',['require','list/singleSelect','list/multiSelect'],function (require) {
+
+define('list',['require','list/singleSelect','list/multiSelect'],function(require) {
 
     return {
         SingleSelect: require('list/singleSelect'),
         MultiSelect: require('list/multiSelect')
-    }
+    };
 });

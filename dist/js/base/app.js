@@ -1,4 +1,4 @@
-define(['require', 'base/router'], function (require, Router) {
+define(['require', 'base/router'], function(require, Router) {
 
     var hex_md5 = window.hex_md5;
 
@@ -8,13 +8,13 @@ define(['require', 'base/router'], function (require, Router) {
     var app = {
         root: '/',
         baseUrl: 'js/',
-        defaultApp:'default',
+        defaultApp: 'default',
         appBody: '#app-body',
-        compileTemplate: function (str) {
+        compileTemplate: function(str) {
             return Handlebars.compile(str);
         },
         router: new Router(),
-        getTemplateDef: function (template) {
+        getTemplateDef: function(template) {
             var _this = this;
             template = template || '';
             var hash = getHash(template);
@@ -25,14 +25,14 @@ define(['require', 'base/router'], function (require, Router) {
                 //if template is already a function, can be used for using other template engines
                 if (typeof template === 'function') {
                     def.resolve(template);
-                } else if (typeof  template === 'string') {
+                } else if (typeof template === 'string') {
                     //app.log(template, template.length, template.indexOf('.html'));
                     //if template is an url
                     if (template.indexOf('.html') === template.length - 5) {
-                        require(['text!' + template], function (txt) {
+                        require(['text!' + template], function(txt) {
                             def.resolve(_this.compileTemplate(txt));
                         });
-                    } else
+                    } else;
                     //if template is an id of script element in html page
                     if (template.indexOf('#') === 0) {
                         def.resolve(_this.compileTemplate($(template).html()));
@@ -44,26 +44,26 @@ define(['require', 'base/router'], function (require, Router) {
             }
             return def;
         },
-        cacheTemplate: function (def, hash) {
+        cacheTemplate: function(def, hash) {
             templateIndex[hash] = def;
         },
-        cacheData: function (def, hash) {
+        cacheData: function(def, hash) {
             dataIndex[hash] = def;
         },
-        log: function () {
+        log: function() {
             console.log.apply(console, arguments);
         },
-        getString: function (str) {
+        getString: function(str) {
             return str;
         },
-        parseSuccessResponse: function (resp) {
+        parseSuccessResponse: function(resp) {
             return resp;
         },
-        parseFailureResponse: function (resp) {
+        parseFailureResponse: function(resp) {
             return resp;
         },
         appModel: new Backbone.Model(),
-        getRequestDef: function (config) {
+        getRequestDef: function(config) {
             var _this = this;
             var attributeName = config.name || '';
             var responseParser = config.parser;
@@ -75,56 +75,56 @@ define(['require', 'base/router'], function (require, Router) {
 
             if (!def) {
                 def = $.Deferred();
-                $.ajax(config).done(function (resp) {
+                $.ajax(config).done(function(resp) {
                     var parserFunc = responseParser || _this.parseSuccessResponse;
-                    var parsedResponse = parserFunc(resp)
+                    var parsedResponse = parserFunc(resp);
                     if (parsedResponse.errors) {
                         def.reject(parsedResponse.errors);
                     } else {
                         _this.cacheData(def, hash);
                         def.resolve(parsedResponse);
                     }
-                }).fail(function (resp) {
+                }).fail(function(resp) {
                         var parserFunc = responseParser || _this.parseFailureResponse;
-                        var parsedResponse = parserFunc(resp)
+                        var parsedResponse = parserFunc(resp);
                         def.reject(parsedResponse.errors);
-                    })
+                    });
 
             }
             return def;
         },
-        makeRequest:function(task, callback){
+        makeRequest: function(task, callback) {
             var def = this.getRequestDef(task);
-            def.done(function(results){
-                callback(null,results)
-            })
-            def.fail(function(errors){
+            def.done(function(results) {
+                callback(null, results);
+            });
+            def.fail(function(errors) {
                 callback(errors);
             });
         },
-        beautifyId:function(s){
-            s = s.replace(/([A-Z])/g, function(s){return ' '+s});
-            return s.replace(/(^.)/g, function(s){return s.toUpperCase()});
+        beautifyId: function(s) {
+            s = s.replace(/([A-Z])/g, function(s) {return ' ' + s});
+            return s.replace(/(^.)/g, function(s) {return s.toUpperCase()});
         },
-        getDataIndex:function(){
+        getDataIndex: function() {
             return dataIndex;
         }
-    }
+    };
 
 
-    var getHash = function (key) {
+    var getHash = function(key) {
         return key.toString();
-    }
+    };
 
-    var getTemplateDefByHash = function (hash) {
+    var getTemplateDefByHash = function(hash) {
         return templateIndex[hash];
-    }
-    var getRequestDefByHash = function (hash) {
+    };
+    var getRequestDefByHash = function(hash) {
         return dataIndex[hash];
-    }
+    };
 
 
     return app;
 
 
-})
+});
