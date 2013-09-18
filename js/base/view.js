@@ -1,50 +1,59 @@
-define(['base/app', 'base/model', 'base/util'], function(app, BaseModel, util) {
+define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) {
 
     var BaseView = Backbone.View.extend({
-        constructor: function(options) {
+        constructor: function (options) {
             var _this = this;
             Backbone.View.call(_this, options);
-            _.each(setupFunctions, function(func) {
+            _.each(setupFunctions, function (func) {
                 func.call(_this, options);
             });
         },
-        render: function() {
+        render: function () {
             var _this = this;
             _this.beforeRender();
-            app.getTemplateDef(_this.getTemplate()).done(function(templateFunction) {
-                if (!_this.model) {
-                    _this.model = new BaseModel();
-                }
-                _this.renderTemplate(templateFunction);
-                setupSubViews.call(_this);
-                if (_this.setState) {
-                    var defaultState = _.keys(_this.getOption('states'))[0];
-                    _this.setState(_this.getState() || _this.getOption('state') || defaultState);
-                }
-                _this.postRender();
-            });
+            var metaSuccess = function(arguments){
+                app.getTemplateDef(_this.getTemplate()).done(function (templateFunction) {
+                    if (!_this.model) {
+                        _this.model = new BaseModel();
+                    }
+                    _this.renderTemplate(templateFunction);
+                    setupSubViews.call(_this);
+                    if (_this.setState) {
+                        var defaultState = _.keys(_this.getOption('states'))[0];
+                        _this.setState(_this.getState() || _this.getOption('state') || defaultState);
+                    }
+                    _this.postRender();
+                });
+
+            }
+
+            var metaDef = _this.loadMeta();
+            metaDef.always(metaSuccess)
             return _this;
         },
-        postRender: function() {
+        postRender: function () {
 
         },
-        beforeRender: function() {
+        beforeRender: function () {
 
         },
-        renderTemplate: function(templateFunction) {
+        renderTemplate: function (templateFunction) {
             //console.log(this.template, templateFunction(this.model.toJSON()));
             this.$el.html(templateFunction(this.model.toJSON()));
         },
-        getOption: function(option) {
+        getOption: function (option) {
             return this.options[option];
         },
-        actionHandler: function() {
+        actionHandler: function () {
 
         },
-        loadingHandler: function(isLoading) {
+        loadingHandler: function (isLoading) {
             this.$el.toggleClass('loading', isLoading);
         },
-        addMethod: function(methodName, func) {
+        metaLoadErrorHandler:function(){
+            this.$el.html('Error Loading Meta Data');
+        },
+        addMethod: function (methodName, func) {
             if (!this[methodName]) {
                 this[methodName] = func;
             }
@@ -52,19 +61,19 @@ define(['base/app', 'base/model', 'base/util'], function(app, BaseModel, util) {
     });
 
 
-    var bindDataEvents = function() {
+    var bindDataEvents = function () {
         var _this = this;
         var modelOrCollection = _this.model || _this.collection;
         var eventList, _this;
         eventList = _this.dataEvents;
-        _.each(eventList, function(handler, event) {
+        _.each(eventList, function (handler, event) {
             var events, handlers, splitter;
             splitter = /\s+/;
             handlers = handler.split(splitter);
             events = event.split(splitter);
-            _.each(handlers, function(shandler) {
-                _.each(events, function(sevent) {
-                    modelOrCollection.on(sevent, function() {
+            _.each(handlers, function (shandler) {
+                _.each(events, function (sevent) {
+                    modelOrCollection.on(sevent, function () {
                         if (_this[shandler]) {
                             var args = Array.prototype.slice.call(arguments);
                             args.unshift(sevent);
@@ -78,7 +87,7 @@ define(['base/app', 'base/model', 'base/util'], function(app, BaseModel, util) {
         });
     };
 
-    var setupStateEvents = function() {
+    var setupStateEvents = function () {
         var _this = this;
         var stateConfigs = _this.getOption('states');
         if (!stateConfigs) {
@@ -89,7 +98,7 @@ define(['base/app', 'base/model', 'base/util'], function(app, BaseModel, util) {
         var statedView;
 
 
-        var cleanUpState = function() {
+        var cleanUpState = function () {
             if (statedView) {
                 statedView.off();
                 statedView.remove();
@@ -97,7 +106,7 @@ define(['base/app', 'base/model', 'base/util'], function(app, BaseModel, util) {
 
         };
 
-        var renderState = function(StateView) {
+        var renderState = function (StateView) {
             statedView = util.createView({
                 View: StateView,
                 model: _this.model,
@@ -105,7 +114,7 @@ define(['base/app', 'base/model', 'base/util'], function(app, BaseModel, util) {
             });
         };
 
-        _this.setState = function(toState) {
+        _this.setState = function (toState) {
             if (typeof toState === 'string') {
                 if (state === toState) {
                     return;
@@ -124,29 +133,29 @@ define(['base/app', 'base/model', 'base/util'], function(app, BaseModel, util) {
             }
         };
 
-        _this.getState = function() {
+        _this.getState = function () {
             return state;
         };
 
     };
 
-    var setupTemplateEvents = function() {
-        (function(that) {
+    var setupTemplateEvents = function () {
+        (function (that) {
             var template = that.getOption('template') || that.template;
             //if (template) {
-            that.setTemplate = function(newTemplate) {
+            that.setTemplate = function (newTemplate) {
                 template = newTemplate;
                 that.render();
             };
 
-            that.getTemplate = function() {
+            that.getTemplate = function () {
                 return template;
             };
             //}
         })(this);
     };
 
-    var setupSubViews = function() {
+    var setupSubViews = function () {
         var _this = this;
         var views = {};
 
@@ -156,14 +165,14 @@ define(['base/app', 'base/model', 'base/util'], function(app, BaseModel, util) {
             return;
         }
 
-        _.each(subViewConfigs, function(viewConfig, viewName) {
+        _.each(subViewConfigs, function (viewConfig, viewName) {
             if (viewConfig.parentEl && typeof viewConfig.parentEl === 'string') {
                 viewConfig.parentEl = _this.$(viewConfig.parentEl);
             }
             views[viewName] = util.createView(viewConfig);
         });
 
-        _this.getSubView = function(id) {
+        _this.getSubView = function (id) {
             var subView = views[id];
             if (subView) {
                 return subView;
@@ -175,7 +184,7 @@ define(['base/app', 'base/model', 'base/util'], function(app, BaseModel, util) {
     };
 
 
-    var setupAttributeWatch = function() {
+    var setupAttributeWatch = function () {
         var _this = this;
         var model = _this.model;
         if (model) {
@@ -185,9 +194,9 @@ define(['base/app', 'base/model', 'base/util'], function(app, BaseModel, util) {
 
     };
 
-    var watchAttributes = function(model) {
+    var watchAttributes = function (model) {
         var changes = model.changedAttributes();
-        _.each(changes, function(value, attribute) {
+        _.each(changes, function (value, attribute) {
             var handler = this[attribute + 'ChangeHandler'];
             if (handler && typeof handler === 'function') {
                 handler.call(this, value);
@@ -200,9 +209,9 @@ define(['base/app', 'base/model', 'base/util'], function(app, BaseModel, util) {
         }
     };
 
-    var syncAttributes = function(model) {
+    var syncAttributes = function (model) {
         var changes = model.toJSON();
-        _.each(changes, function(value, attribute) {
+        _.each(changes, function (value, attribute) {
             var handler = this[attribute + 'ChangeHandler'];
             if (handler && typeof handler === 'function') {
                 handler.call(this, value);
@@ -215,15 +224,15 @@ define(['base/app', 'base/model', 'base/util'], function(app, BaseModel, util) {
         }
     };
 
-    var setupActionNavigateAnchors = function() {
+    var setupActionNavigateAnchors = function () {
         var _this = this;
-        var verifyPropagation = function(e) {
+        var verifyPropagation = function (e) {
             if (e.actionHandled) {
                 e.stopPropagation();
                 $('body').trigger('click');
             }
         };
-        _this.$el.on('click', '.action', function(e) {
+        _this.$el.on('click', '.action', function (e) {
             e.preventDefault();
             var target = $(e.currentTarget);
             var action = target.attr('href').substr(1);
@@ -231,70 +240,71 @@ define(['base/app', 'base/model', 'base/util'], function(app, BaseModel, util) {
             verifyPropagation(e);
         });
 
-        _this.$el.on('click', '.dummy', function(e) {
+        _this.$el.on('click', '.dummy', function (e) {
             e.preventDefault();
         });
     };
 
-    var setupOnChangeRender = function() {
+    var setupOnChangeRender = function () {
         var _this = this;
         if (this.getOption('renderOnChange') === true) {
-            _this.model.on('change', function() {
+            _this.model.on('change', function () {
                 _this.render.call(_this);
             });
         }
     };
 
 
-
-
-    var setupMetaRequests = function() {
+    var setupMetaRequests = function () {
         var _this = this;
         var requestConfigs = _this.getOption('requests') || _this.requests;
-        var loading = false;
 
-        var defArray = [];
-
-        var addRequest = function(config, callback) {
-            var def = app.getRequestDef(config);
-            defArray.push(def);
-            def.done(callback);
-            def.fail(callback);
-            return def;
-        };
-
-        var requestQue = util.aSyncQueue(addRequest);
-        requestQue.added = function() {
-            loading = true;
-            _this.loadingHandler.call(_this, loading);
-        };
-        requestQue.drain = function() {
-            loading = false;
-            defArray=[];
-            _this.loadingHandler.call(_this, loading);
-        };
+        var runningRequestCount=0;
 
 
-        requestQue.push(requestConfigs || [], function(data) {
-            _this.model.set(data);
-        });
-
-        _this.loadMeta = function() {
-            return $.when.apply(null, defArray);
-        };
-
-        _this.addRequest = function(config, callback) {
-            requestQue.push(config, callback);
-        };
-
-        /*
-
-
-        _this.getRequestQue = function(){
-            return requestQue;
+        var bumpLoadingUp = function(){
+            runningRequestCount ++;
+            _this.loadingHandler.call(_this, true);
         }
 
-        */
+        var bumpLoadingDown = function(){
+            runningRequestCount--;
+            if(runningRequestCount === 0){
+                _this.loadingHandler.call(_this, false);
+            }
+        }
+        _this.addRequest = function (config, callback) {
+            var configArray = config;
+            if (!_.isArray(configArray)) {
+                configArray = [configArray];
+            }
+
+            var defArray = _.map(configArray, function (config) {
+                var def = app.getRequestDef(config);
+                def.always(bumpLoadingDown);
+                bumpLoadingUp();
+                return def
+            })
+
+            var whenDef = $.when.apply(null, defArray);
+
+            if (callback) {
+                whenDef.always(callback);
+            }
+
+            return whenDef;
+        };
+
+        _this.loadMeta = function () {
+            if (requestConfigs && !_this.metaDef) {
+                _this.metaDef = _this.addRequest(requestConfigs);
+                return _this.metaDef;
+            } else {
+                return $.when({});
+            }
+        }
+
+
 
 
     };
