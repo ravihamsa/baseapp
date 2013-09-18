@@ -83,6 +83,7 @@ define(['require', 'base/router'], function (require, Router) {
                     } else {
                         _this.cacheData(def, hash);
                         def.resolve(parsedResponse);
+
                     }
                 }).fail(function (resp) {
                         var parsedResponse = failureParser(resp);

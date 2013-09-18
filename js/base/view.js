@@ -11,7 +11,8 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
         render: function () {
             var _this = this;
             _this.beforeRender();
-            var metaSuccess = function(arguments){
+
+            var continueRender = function(){
                 app.getTemplateDef(_this.getTemplate()).done(function (templateFunction) {
                     if (!_this.model) {
                         _this.model = new BaseModel();
@@ -27,8 +28,16 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
 
             }
 
+            var metaLoadSuccess = function(){
+                var requestsParser = _this.getOption('requestsParser');
+                if(requestsParser){
+                    requestsParser.apply(_this, arguments);
+                }
+                continueRender();
+            }
+
             var metaDef = _this.loadMeta();
-            metaDef.always(metaSuccess)
+            metaDef.done(metaLoadSuccess)
             return _this;
         },
         postRender: function () {
@@ -39,10 +48,12 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
         },
         renderTemplate: function (templateFunction) {
             //console.log(this.template, templateFunction(this.model.toJSON()));
-            this.$el.html(templateFunction(this.model.toJSON()));
+            var useDeepJSON = this.getOption('useDeepJSON');
+            this.$el.html(templateFunction(this.model.toJSON(useDeepJSON)));
         },
         getOption: function (option) {
-            return this.options[option];
+            //console.log(option, this.options[option],this[option]);
+            return this.options[option] || this[option];
         },
         actionHandler: function () {
 
@@ -245,13 +256,15 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
         });
     };
 
-    var setupOnChangeRender = function () {
+    var setupRenderEvents = function () {
         var _this = this;
-        if (this.getOption('renderOnChange') === true) {
-            _this.model.on('change', function () {
+        var renderEvents = this.getOption('renderEvents') || this.renderEvents;
+        if(renderEvents && renderEvents.length > 0){
+            _this.model.on(renderEvents.join(' '), function () {
                 _this.render.call(_this);
             });
         }
+
     };
 
 
@@ -282,6 +295,10 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
             var defArray = _.map(configArray, function (config) {
                 var def = app.getRequestDef(config);
                 def.always(bumpLoadingDown);
+                if(config.callback){
+                    def.always(config.callback);
+                }
+                def.ts = new Date().getTime();
                 bumpLoadingUp();
                 return def
             })
@@ -309,7 +326,7 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
 
     };
 
-    var setupFunctions = [bindDataEvents, setupTemplateEvents, setupAttributeWatch, setupActionNavigateAnchors, setupOnChangeRender, setupStateEvents, setupMetaRequests];
+    var setupFunctions = [bindDataEvents, setupTemplateEvents, setupAttributeWatch, setupActionNavigateAnchors, setupRenderEvents, setupStateEvents, setupMetaRequests];
 
     return BaseView;
 });

@@ -54,6 +54,17 @@ define(function() {
             }else {
                 return coll.at(index + 1);
             }
+        },
+        toJSON:function(useDeepJSON){
+            var attributes = _.clone(this.attributes);
+            if(useDeepJSON){
+                _.each(attributes, function(value, key){
+                    if(value.toJSON){
+                        attributes[key] = value.toJSON();
+                    }
+                })
+            }
+            return attributes;
         }
     });
 
