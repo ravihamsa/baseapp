@@ -11,9 +11,6 @@ define(['base/app', 'base/model', 'base/util'], function(app, BaseModel, util) {
         render: function() {
             var _this = this;
             _this.beforeRender();
-            _this.loadMeta().then(function(){
-                console.log(arguments);
-            });
             app.getTemplateDef(_this.getTemplate()).done(function(templateFunction) {
                 if (!_this.model) {
                     _this.model = new BaseModel();
@@ -35,6 +32,7 @@ define(['base/app', 'base/model', 'base/util'], function(app, BaseModel, util) {
 
         },
         renderTemplate: function(templateFunction) {
+            //console.log(this.template, templateFunction(this.model.toJSON()));
             this.$el.html(templateFunction(this.model.toJSON()));
         },
         getOption: function(option) {

@@ -261,7 +261,7 @@ define([
         events: {
             'submit form': 'formSubmitHandler'
         },
-        template: '<div class="form-message-container"></div><form action="{{actionId}}" id="form-{{id}}" class="form-vertical" method=""></form>',
+        template: '<div class="form-message-container"></div><form action="{{actionId}}" id="form-{{id}}" class="form-vertical" method=""> <div class="group-list"></div> <div class="grp-buttons"> </div> </form>',
 
         postRender: function() {
             this.formEl = this.$('form');
@@ -303,9 +303,10 @@ define([
             var model = this.model;
             var elements = model.get('elements');
             var groupList = _.unique(elements.pluck('group'));
+            var groupListEl = this.$('.group-list');
             _.each(groupList, function(groupName) {
                 if (this.$('.' + groupPrefix + groupName).length === 0) {
-                    this.formEl.append('<div class="' + groupPrefix + groupName + '"></div>');
+                    groupListEl.append('<div class="' + groupPrefix + groupName + '"></div>');
                 }
             }, this);
         },

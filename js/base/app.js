@@ -28,13 +28,12 @@ define(['require', 'base/router'], function(require, Router) {
                 } else if (typeof template === 'string') {
                     //app.log(template, template.length, template.indexOf('.html'));
                     //if template is an url
-                    if (template.indexOf('.html') === template.length - 5) {
+                    //console.log(template.indexOf('.html'), template.length - 5);
+                    if (/html$/.test(template)) {
                         require(['text!' + template], function(txt) {
                             def.resolve(_this.compileTemplate(txt));
                         });
-                    } else;
-                    //if template is an id of script element in html page
-                    if (template.indexOf('#') === 0) {
+                    } else if (template.indexOf('#') === 0) {
                         def.resolve(_this.compileTemplate($(template).html()));
                     } else {
                         //if template is a template string
@@ -108,6 +107,9 @@ define(['require', 'base/router'], function(require, Router) {
         },
         getDataIndex: function() {
             return dataIndex;
+        },
+        getTemplateIndex:function(){
+            return templateIndex;
         }
     };
 
