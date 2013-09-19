@@ -67,6 +67,11 @@ define(['base'], function(Base) {
 
         var coll = _this.get('items');
 
+        if(!coll){
+            coll = new ItemCollection();
+            _this.set('items', coll);
+        }
+
         var selectedItem = coll.findWhere({selected: true});
         if (selectedItem) {
             selected = selectedItem;
