@@ -52,9 +52,6 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
             //console.log(option, this.options[option],this[option]);
             return this.options[option] || this[option];
         },
-        actionHandler: function () {
-
-        },
         loadingHandler: function (isLoading) {
             this.$el.toggleClass('loading', isLoading);
         },
@@ -240,13 +237,17 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
                 $('body').trigger('click');
             }
         };
-        _this.$el.on('click', '.action', function (e) {
-            e.preventDefault();
-            var target = $(e.currentTarget);
-            var action = target.attr('href').substr(1);
-            _this.actionHandler.call(_this, action, e);
-            verifyPropagation(e);
-        });
+
+        if(_this.actionHandler){
+            _this.$el.on('click', '.action', function (e) {
+                e.preventDefault();
+                var target = $(e.currentTarget);
+                var action = target.attr('href').substr(1);
+                _this.actionHandler.call(_this, action, e);
+                verifyPropagation(e);
+            });
+        }
+
 
         _this.$el.on('click', '.dummy', function (e) {
             e.preventDefault();
