@@ -261,7 +261,7 @@ define([
         events: {
             'submit form': 'formSubmitHandler'
         },
-        template: '<div class="form-message-container"></div><form action="{{actionId}}" id="form-{{id}}" class="form-vertical" method=""> <div class="group-list"></div> <div class="grp-buttons"> </div> </form>',
+        template: '<div class="form-message-container"></div><form action="{{actionId}}" class="form-vertical" method=""> <div class="group-list"></div> <div class="grp-buttons"> </div> </form>',
 
         postRender: function() {
             this.formEl = this.$('form');
