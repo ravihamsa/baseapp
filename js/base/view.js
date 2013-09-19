@@ -29,10 +29,7 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
             }
 
             var metaLoadSuccess = function(){
-                var requestsParser = _this.getOption('requestsParser');
-                if(requestsParser){
-                    requestsParser.apply(_this, arguments);
-                }
+
                 continueRender();
             }
 
@@ -298,27 +295,30 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
                 if(config.callback){
                     def.always(config.callback);
                 }
-                def.ts = new Date().getTime();
                 bumpLoadingUp();
                 return def
             })
 
-            var whenDef = $.when.apply(null, defArray);
+            var requestPromise = $.when.apply(null, defArray);
 
             if (callback) {
-                whenDef.always(callback);
+                requestPromise.then(callback);
             }
 
-            return whenDef;
+            return requestPromise;
         };
 
         _this.loadMeta = function () {
-            if (requestConfigs && !_this.metaDef) {
-                _this.metaDef = _this.addRequest(requestConfigs);
-                return _this.metaDef;
-            } else {
-                return $.when({});
+            if (!_this.metaDef) {
+                var def = requestConfigs ? _this.addRequest(requestConfigs,function(){
+                    var requestsParser = _this.getOption('requestsParser');
+                    if(requestsParser){
+                        requestsParser.apply(_this, arguments);
+                    };
+                }) : $.when({});
+                _this.metaDef = def;
             }
+            return _this.metaDef;
         }
 
 
