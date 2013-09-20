@@ -109,6 +109,13 @@ define(['base'], function(Base) {
         };
 
         _this.setSelected = function(curItem) {
+            if (!selected) {
+                selected = curItem;
+                curItem.select();
+                updateSelected();
+                return;
+            }
+
             if (curItem.id === selected.id) {
                 return;
             }
