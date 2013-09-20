@@ -186,6 +186,14 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
             }
         };
 
+        _this.getSubModel = function(viewId){
+            return _this.getSubView(viewId).model;
+        }
+
+        _this.getSubAttribute = function(viewId, attributeName){
+            return _this.getSubModel(viewId).get(attributeName);
+        }
+
     };
 
 
@@ -269,9 +277,7 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
     var setupMetaRequests = function () {
         var _this = this;
         var requestConfigs = _this.getOption('requests') || _this.requests;
-
         var runningRequestCount=0;
-
 
         var bumpLoadingUp = function(){
             runningRequestCount ++;
@@ -327,7 +333,7 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
 
     };
 
-    var setupFunctions = [bindDataEvents, setupTemplateEvents, setupAttributeWatch, setupActionNavigateAnchors, setupRenderEvents, setupStateEvents, setupMetaRequests];
+    var setupFunctions = [bindDataEvents, setupMetaRequests, setupTemplateEvents, setupAttributeWatch, setupActionNavigateAnchors, setupRenderEvents, setupStateEvents];
 
     return BaseView;
 });
