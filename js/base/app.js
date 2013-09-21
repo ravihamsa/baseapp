@@ -2,6 +2,18 @@ define(['require', 'base/router'], function (require, Router) {
 
     var hex_md5 = window.hex_md5;
 
+    var getHash = function (key) {
+        return key.toString();
+    };
+
+    var getTemplateDefByHash = function (hash) {
+        return templateIndex[hash];
+    };
+    var getRequestDefByHash = function (hash) {
+        return dataIndex[hash];
+    };
+
+
 
     var templateIndex = {}, dataIndex = {};
 
@@ -115,20 +127,11 @@ define(['require', 'base/router'], function (require, Router) {
         },
         getTemplateIndex: function () {
             return templateIndex;
-        }
+        },
+        getHash:getHash
     };
 
 
-    var getHash = function (key) {
-        return key.toString();
-    };
-
-    var getTemplateDefByHash = function (hash) {
-        return templateIndex[hash];
-    };
-    var getRequestDefByHash = function (hash) {
-        return dataIndex[hash];
-    };
 
 
     return app;
