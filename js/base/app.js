@@ -109,7 +109,6 @@ define(['require', 'base/router', 'base/dataLoader'], function (require, Router,
                 })
 
                 request.fail(function (resp) {
-                    var parsedResponse = failureParser(resp);
                     def.resolve({errors:[{errorCode:'network issue', message:'Network failure try again later'}]});
                 });
 
