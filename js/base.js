@@ -8,6 +8,7 @@ define(function(require) {
         Collection: require('base/collection'),
         util: require('base/util'),
         app: require('base/app'),
+        dataLoader:require('base/dataLoader'),
         Router: require('base/router'),
         helpers: require('base/helpers')
     };

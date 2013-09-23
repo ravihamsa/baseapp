@@ -1,9 +1,9 @@
-define(['require', 'base/router'], function (require, Router) {
+define(['require', 'base/router', 'base/dataLoader'], function (require, Router, dataLoader) {
 
     var hex_md5 = window.hex_md5;
 
     var getHash = function (key) {
-        return key.toString();
+        return hex_md5(key.toString());
     };
 
     var getTemplateDefByHash = function (hash) {
@@ -12,7 +12,6 @@ define(['require', 'base/router'], function (require, Router) {
     var getRequestDefByHash = function (hash) {
         return dataIndex[hash];
     };
-
 
 
     var templateIndex = {}, dataIndex = {};
@@ -76,43 +75,46 @@ define(['require', 'base/router'], function (require, Router) {
         appModel: new Backbone.Model(),
         getRequestDef: function (config) {
             var _this = this;
-            var attributeName = config.name || '';
-            var successParser = _this.parseSuccessResponse, failureParser = _this.parseFailureResponse;
-            if (config.parser) {
-                successParser = failureParser = config.parser;
-            }
-            config = _.omit(config, 'name', 'parser');
 
+            //fetch request config for dataLoader request index
+            var requestConfig = dataLoader.getConfig(config.id);
+
+            //default parsers
+            var successParser = _this.parseSuccessResponse, failureParser = _this.parseFailureResponse;
+
+            //if defined consider custom parser
+            if (requestConfig.parser) {
+                successParser = failureParser = requestConfig.parser;
+            }
+
+            //get hash of id and parameters
             var hash = getHash(JSON.stringify(_.pick(config, 'id', 'params')));
+
+            //check if given hash already has a request running;
             var def = getRequestDefByHash(hash);
 
             if (!def) {
                 def = $.Deferred();
-                $.ajax(config).done(function (resp) {
+                var request = dataLoader.getRequest(config.id,config.params);
+
+                request.done(function (resp) {
                     var parsedResponse = successParser(resp);
                     if (parsedResponse.errors) {
-                        def.reject(parsedResponse.errors);
+                        def.resolve(parsedResponse.errors);
                     } else {
                         _this.cacheData(def, hash);
                         def.resolve(parsedResponse);
 
                     }
-                }).fail(function (resp) {
-                        var parsedResponse = failureParser(resp);
-                        def.reject(parsedResponse.errors);
-                    });
+                })
+
+                request.fail(function (resp) {
+                    var parsedResponse = failureParser(resp);
+                    def.resolve({errors:[{errorCode:'network issue', message:'Network failure try again later'}]});
+                });
 
             }
             return def;
-        },
-        makeRequest: function (task, callback) {
-            var def = this.getRequestDef(task);
-            def.done(function (results) {
-                callback(null, results);
-            });
-            def.fail(function (errors) {
-                callback(errors);
-            });
         },
         beautifyId: function (s) {
             s = s.replace(/([A-Z])/g, function (s) {
@@ -128,11 +130,8 @@ define(['require', 'base/router'], function (require, Router) {
         getTemplateIndex: function () {
             return templateIndex;
         },
-        getHash:getHash
+        getHash: getHash
     };
-
-
-
 
     return app;
 
