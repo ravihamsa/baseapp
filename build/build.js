@@ -10,7 +10,7 @@
 
     },
     dir: '../dist',
-    optimize: 'none',
+    //optimize: 'none',
     fileExclusionRegExp: /(build|idea|libs|dist|less|bower|README|nbproject|.gitignore)/,
     modules: [
         {

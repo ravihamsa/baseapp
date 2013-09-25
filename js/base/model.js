@@ -65,8 +65,39 @@ define(function() {
                 })
             }
             return attributes;
+        },
+        checkFilters:function(filtersArray){
+
+            if(filtersArray.length === 0){
+                return true;
+            }
+
+            var _this = this;
+            var attributes = _this.toJSON();
+
+            var filtered = _.every(filtersArray,function(filter){
+                return filterMethods[filter.expr].call(_this,filter, attributes[filter.column])
+            })
+
+            return filtered;
         }
     });
+
+
+    var filterMethods = {
+        'eq': function(filter, value) {
+            return filter.value === value;
+        },
+        'startsWith':function(filter, value){
+            return new RegExp('^'+value,'i').test(filter.value);
+        },
+        'endsWith':function(filter, value){
+            return new RegExp(value+'$','i').test(filter.value);
+        },
+        'has':function(filter, value){
+            return new RegExp(value,'i').test(filter.value);
+        }
+    }
 
     return BaseModel;
 });
