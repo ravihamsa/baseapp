@@ -11,7 +11,7 @@
     },
     dir: '../dist',
     //optimize: 'none',
-    fileExclusionRegExp: /(build|idea|libs|dist|less|bower|README|nbproject|.gitignore)/,
+    fileExclusionRegExp: /(build|idea|libs|dist|less|bower|README|nbproject|.gitignore|.git)/,
     modules: [
         {
             name: 'base',
