@@ -132,6 +132,10 @@ define(['base'], function(Base) {
             previousSelected.deselect();
             updateSelected();
         };
+
+        _this.selectFirst = function(){
+            _this.setSelected(coll.first());
+        }
     }
 
     return {

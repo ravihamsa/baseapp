@@ -3,6 +3,7 @@ js/base.js
 ----------------
 js/base/util.js
 js/base/router.js
+js/base/dataLoader.js
 js/base/app.js
 js/base/model.js
 js/base/view.js
@@ -42,6 +43,7 @@ js/base-list.js
 ----------------
 js/base/util.js
 js/base/router.js
+js/base/dataLoader.js
 js/base/app.js
 js/base/model.js
 js/base/view.js
@@ -63,6 +65,7 @@ js/base-list-widgets.js
 ----------------
 js/base/util.js
 js/base/router.js
+js/base/dataLoader.js
 js/base/app.js
 js/base/model.js
 js/base/view.js

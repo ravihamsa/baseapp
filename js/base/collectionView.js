@@ -1,27 +1,8 @@
 define(['base/view', 'base/itemView', 'base/util'], function(BaseView, BaseItemView, util) {
 
-
-
-    var CollectionView = BaseView.extend({
-        tagName: 'ul',
-        dataEvents: {
-            'add' : 'addHandler',
-            'remove': 'removeHandler'
-        },
-        postRender: function() {
-            collectionRender.call(this);
-        },
-        addHandler: function(event, model) {
-            this.addItem(model);
-        },
-        removeHandler: function(event,model) {
-            this.removeItem(model);
-        }
-    });
-
-    var collectionRender = function() {
+    var setupCollectionRender = function() {
         var _this = this;
-        var viewArray = {};
+        var viewIndex = {};
         var el = this.$el;
         var coll = this.collection;
 
@@ -33,7 +14,7 @@ define(['base/view', 'base/itemView', 'base/util'], function(BaseView, BaseItemV
 
             var ItemView = _this.getOption('itemView') || BaseItemView;
             var view = util.createView({model: model, className: 'id-' + model.id, View: ItemView});
-            viewArray[model.id] = view;
+            viewIndex[model.id] = view;
 
             var index = coll.indexOf(model);
             if (index === 0) {
@@ -53,15 +34,39 @@ define(['base/view', 'base/itemView', 'base/util'], function(BaseView, BaseItemV
         };
 
         _this.getModelViewAt = function(id) {
-            return viewArray[id];
+            return viewIndex[id];
         };
 
-        var fragment = document.createDocumentFragment();
-        coll.each(function(model, index) {
-            _this.addItem(model, fragment);
-        });
-        this.$el.append(fragment);
+
     };
+
+
+    var CollectionView = BaseView.extend({
+        tagName: 'ul',
+        dataEvents: {
+            'add' : 'addHandler',
+            'remove': 'removeHandler'
+        },
+        extensions:[setupCollectionRender],
+        postRender: function() {
+            var _this = this;
+            var el = this.$el;
+            var coll = this.collection;
+            el.hide();
+            coll.each(function(model) {
+                _this.addItem(model, el);
+            });
+            el.show();
+        },
+        addHandler: function(event, model) {
+            this.addItem(model);
+        },
+        removeHandler: function(event,model) {
+            this.removeItem(model);
+        }
+    });
+
+
 
     return CollectionView;
 });

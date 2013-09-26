@@ -7,12 +7,23 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
             _.each(setupFunctions, function (func) {
                 func.call(_this, options);
             });
+            _.each(_this.extensions, function (func) {
+                func.call(_this, options);
+            });
+
+            var addOns = _this.getOption('addOns')
+            if (addOns && addOns.length > 0) {
+                _.each(addOns, function (func) {
+                    func.call(_this, options);
+                })
+            }
         },
+        extensions: [],
         render: function () {
             var _this = this;
             _this.beforeRender();
 
-            var continueRender = function(){
+            var continueRender = function () {
                 app.getTemplateDef(_this.getTemplate()).done(function (templateFunction) {
                     if (!_this.model) {
                         _this.model = new BaseModel();
@@ -28,7 +39,7 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
 
             }
 
-            var metaLoadSuccess = function(){
+            var metaLoadSuccess = function () {
 
                 continueRender();
             }
@@ -55,7 +66,7 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
         loadingHandler: function (isLoading) {
             this.$el.toggleClass('loading', isLoading);
         },
-        metaLoadErrorHandler:function(){
+        metaLoadErrorHandler: function () {
             this.$el.html('Error Loading Meta Data');
         },
         addMethod: function (methodName, func) {
@@ -186,11 +197,11 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
             }
         };
 
-        _this.getSubModel = function(viewId){
+        _this.getSubModel = function (viewId) {
             return _this.getSubView(viewId).model;
         }
 
-        _this.getSubAttribute = function(viewId, attributeName){
+        _this.getSubAttribute = function (viewId, attributeName) {
             return _this.getSubModel(viewId).get(attributeName);
         }
 
@@ -246,7 +257,7 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
             }
         };
 
-        if(_this.actionHandler){
+        if (_this.actionHandler) {
             _this.$el.on('click', '.action', function (e) {
                 e.preventDefault();
                 var target = $(e.currentTarget);
@@ -265,7 +276,7 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
     var setupRenderEvents = function () {
         var _this = this;
         var renderEvents = this.getOption('renderEvents') || this.renderEvents;
-        if(renderEvents && renderEvents.length > 0){
+        if (renderEvents && renderEvents.length > 0) {
             _this.model.on(renderEvents.join(' '), function () {
                 _this.render.call(_this);
             });
@@ -277,16 +288,16 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
     var setupMetaRequests = function () {
         var _this = this;
         var requestConfigs = _this.getOption('requests') || _this.requests;
-        var runningRequestCount=0;
+        var runningRequestCount = 0;
 
-        var bumpLoadingUp = function(){
-            runningRequestCount ++;
+        var bumpLoadingUp = function () {
+            runningRequestCount++;
             _this.loadingHandler.call(_this, true);
         }
 
-        var bumpLoadingDown = function(){
+        var bumpLoadingDown = function () {
             runningRequestCount--;
-            if(runningRequestCount === 0){
+            if (runningRequestCount === 0) {
                 _this.loadingHandler.call(_this, false);
             }
         }
@@ -299,7 +310,7 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
             var defArray = _.map(configArray, function (config) {
                 var def = app.getRequestDef(config);
                 def.always(bumpLoadingDown);
-                if(config.callback){
+                if (config.callback) {
                     def.always(config.callback);
                 }
                 bumpLoadingUp();
@@ -317,18 +328,17 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
 
         _this.loadMeta = function () {
             if (!_this.metaDef) {
-                var def = requestConfigs ? _this.addRequest(requestConfigs,function(){
+                var def = requestConfigs ? _this.addRequest(requestConfigs, function () {
                     var requestsParser = _this.getOption('requestsParser');
-                    if(requestsParser){
+                    if (requestsParser) {
                         requestsParser.apply(_this, arguments);
-                    };
+                    }
+                    ;
                 }) : $.when({});
                 _this.metaDef = def;
             }
             return _this.metaDef;
         }
-
-
 
 
     };

@@ -1,8 +1,1 @@
-define(['base/model'], function(BaseModel) {
-
-    var BaseCollection = Backbone.Collection.extend({
-        model: BaseModel
-    });
-
-    return BaseCollection;
-});
+define(["base/app","base/model"],function(e,t){var n=Backbone.Collection.extend({model:t}),r=function(){var t=this,n={};t.addFilter=function(t){var r=e.getHash(t);n[r]=t},t.removeFilter=function(t){var r=e.getHash(t),i=n[r];if(!i)throw new Error("Filter missing");delete n[r]},t.filteredEach=function(e,t,r){var i=_.values(n);for(var s=0,o=e.length;s<o;s++){var u=e.at(s);u.checkFilters(i)&&t.call(r||u)}}},i=function(){var e=this,t=0};return n});

@@ -1,9 +1,1 @@
-define(['base/view'], function(BaseView) {
-
-    var ItemView = BaseView.extend({
-        tagName: 'li',
-        template: '{{name}}'
-    });
-
-    return ItemView;
-});
+define(["base/view"],function(e){var t=e.extend({tagName:"li",template:"{{name}}"});return t});
