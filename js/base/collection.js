@@ -1,7 +1,19 @@
 define(['base/app','base/model'], function(baseApp, BaseModel) {
 
     var BaseCollection = Backbone.Collection.extend({
-        model: BaseModel
+        constructor: function (options) {
+            var _this = this;
+            _this.options = options || {};
+            Backbone.Collection.call(_this, options);
+            _.each(setupFunctions, function (func) {
+                func.call(_this, options);
+            });
+        },
+        model: BaseModel,
+        getOption: function (option) {
+            //console.log(option, this.options[option],this[option]);
+            return this.options[option] || this[option];
+        }
     });
 
 
@@ -21,12 +33,16 @@ define(['base/app','base/model'], function(baseApp, BaseModel) {
 
     var setupFilters = function(){
         var collection = this;
+        var sortKey = collection.getOption('sortKey') || 'name';
+        var sortOrder=collection.getOption('sortOrder') || 'asc';
+
         var filtersIndex={
 
         }
 
         collection.addFilter = function(filterConfig){
-            var hash = baseApp.getHash(filterConfig);
+            var hash = baseApp.getHash(JSON.stringify(filterConfig));
+            console.log(hash, filterConfig);
             filtersIndex[hash] = filterConfig;
         }
 
@@ -40,12 +56,14 @@ define(['base/app','base/model'], function(baseApp, BaseModel) {
             }
         }
 
-        collection.filteredEach = function(obj, iterator, context){
+        collection.processedEach = function(iterator, context){
+            var _this = this;
             var filtersArray = _.values(filtersIndex);
-            for(var i= 0, len = obj.length; i<len; i++){
-                var model = obj.at(i);
+            for(var i= 0, len = _this.length; i<len; i++){
+                var model = _this.at(i);
+                console.log('filter satisfied', model.checkFilters(filtersArray))
                 if(model.checkFilters(filtersArray)){
-                    iterator.call(context||model);
+                    iterator.call(context||_this, model);
                 };
             }
         }
@@ -57,6 +75,8 @@ define(['base/app','base/model'], function(baseApp, BaseModel) {
         var curPage =  0;
 
     }
+
+    var setupFunctions = [setupFilters, setupPagination];
 
     return BaseCollection;
 });

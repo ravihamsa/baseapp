@@ -42,12 +42,18 @@ define(['base/view', 'base/itemView', 'base/util'], function(BaseView, BaseItemV
 
 
     var CollectionView = BaseView.extend({
+        constructor: function (options) {
+            var _this = this;
+            BaseView.call(_this, options);
+            _.each([setupCollectionRender], function (func) {
+                func.call(_this, options);
+            });
+        },
         tagName: 'ul',
         dataEvents: {
             'add' : 'addHandler',
             'remove': 'removeHandler'
         },
-        extensions:[setupCollectionRender],
         postRender: function() {
             var _this = this;
             var el = this.$el;

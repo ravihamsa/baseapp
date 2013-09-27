@@ -76,9 +76,11 @@ define(function() {
             var attributes = _this.toJSON();
 
             var filtered = _.every(filtersArray,function(filter){
+                console.log(filter, filterMethods[filter.expr].call(_this,filter, attributes[filter.column]))
                 return filterMethods[filter.expr].call(_this,filter, attributes[filter.column])
             })
 
+            console.log(filtered);
             return filtered;
         }
     });

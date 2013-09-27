@@ -7,6 +7,7 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
             _.each(setupFunctions, function (func) {
                 func.call(_this, options);
             });
+            /*
             _.each(_this.extensions, function (func) {
                 func.call(_this, options);
             });
@@ -17,6 +18,7 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
                     func.call(_this, options);
                 })
             }
+            */
         },
         extensions: [],
         render: function () {
@@ -333,7 +335,6 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
                     if (requestsParser) {
                         requestsParser.apply(_this, arguments);
                     }
-                    ;
                 }) : $.when({});
                 _this.metaDef = def;
             }
