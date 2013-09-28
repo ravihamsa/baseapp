@@ -15,6 +15,19 @@ define(['base/app', 'base', 'widgets/form/validator', 'text!./inputView.html'], 
 
 
     var ElementModel = Base.Model.extend({
+        constructor:function(){
+            Base.Model.apply(this, arguments);
+            var elementModel = this;
+            var elements = elementModel.collection;
+            var activeRules = elementModel.get('activeRules');
+            _.each(activeRules, function (rule) {
+                var toWatchElement = elements.get(rule.element);
+                toWatchElement.on('change:value', function (model, value) {
+                    elementModel.updateActive();
+                });
+                elementModel.updateActive();
+            });
+        },
         defaults: {
             valid: true,
             active: true,
@@ -136,6 +149,7 @@ define(['base/app', 'base', 'widgets/form/validator', 'text!./inputView.html'], 
         },
         valueChangeHandler: function(value) {
             this.$('input').val(value);
+            this.model.updateActive();
            // console.log(value, 'txt');
         },
         errorCodeChangeHandler: function(errorCode) {
