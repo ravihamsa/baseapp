@@ -109,6 +109,11 @@ define(['base'], function(Base) {
         };
 
         _this.setSelected = function(curItem) {
+            if(!curItem){
+                updateSelected();
+                return;
+            }
+
             if (!selected) {
                 selected = curItem;
                 curItem.select();
