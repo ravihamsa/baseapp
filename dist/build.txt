@@ -31,6 +31,7 @@ js/widgets/form/element.js
 text!widgets/messageStack/messageStack.html
 js/widgets/messageStack.js
 text!widgets/form/checkListView.html
+text!widgets/form/checkBoxView.html
 text!widgets/form/radioListView.html
 text!widgets/form/selectView.html
 text!widgets/form/textAreaView.html
@@ -84,6 +85,7 @@ js/widgets/form/element.js
 text!widgets/messageStack/messageStack.html
 js/widgets/messageStack.js
 text!widgets/form/checkListView.html
+text!widgets/form/checkBoxView.html
 text!widgets/form/radioListView.html
 text!widgets/form/selectView.html
 text!widgets/form/textAreaView.html

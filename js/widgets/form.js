@@ -11,11 +11,12 @@ define([
     'widgets/form/element',
     'widgets/messageStack',
     'text!./form/checkListView.html',
+    'text!./form/checkBoxView.html',
     'text!./form/radioListView.html',
     'text!./form/selectView.html',
     'text!./form/textAreaView.html',
     'text!./form/buttonView.html'
-], function (app, Base, Element, MessageStack, checkListTemplate, radioListTemplate, selectViewTemplate, textAreaTemplate, buttonViewTemplate) {
+], function (app, Base, Element, MessageStack, checkListTemplate, checkBoxTemplate, radioListTemplate, selectViewTemplate, textAreaTemplate, buttonViewTemplate) {
     'use strict';
 
     var ElementView = Element.View;
@@ -33,6 +34,7 @@ define([
     });
 
     var CheckboxView = ElementView.extend({
+        template:checkBoxTemplate,
         valueFunction: function () {
             return this.$('input').is(':checked');
         },
