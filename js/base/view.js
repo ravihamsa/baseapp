@@ -78,13 +78,12 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
             }
         },
         remove:function(){
-            console.log('removing view');
             this.removeChildViews();
             Backbone.View.prototype.remove.call(this);
-            this.removeCalls();
+            this.removeReferences();
             this.removeQue = null;
         },
-        removeCalls:function(func){
+        removeReferences:function(func){
             if(func){
                 this.removeQue.push(func);
             }else{
@@ -172,7 +171,7 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
             return state;
         };
 
-        _this.removeCalls(function(){
+        _this.removeReferences(function(){
             stateConfigs = null;
             state=null;
             statedView=null;
@@ -194,7 +193,7 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
             return template;
         };
 
-        _this.removeCalls(function(){
+        _this.removeReferences(function(){
             template=null;
             _this=null;
         })
@@ -231,7 +230,7 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
             return _this.getSubModel(viewId).get(attributeName);
         }
 
-        _this.removeCalls(function(){
+        _this.removeReferences(function(){
             subViewConfigs=null;
             views=null;
             _this=null;
@@ -372,7 +371,7 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
         }
 
 
-        _this.removeCalls(function(){
+        _this.removeReferences(function(){
             requestConfigs=null;
             runningRequestCount=null;
             _this=null;
@@ -395,7 +394,7 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
             });
         }
 
-        _this.removeCalls(function(){
+        _this.removeReferences(function(){
             childViews=null;
             _this=null;
         })

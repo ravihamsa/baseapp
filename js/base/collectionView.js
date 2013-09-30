@@ -37,7 +37,7 @@ define(['base/view', 'base/itemView', 'base/util'], function(BaseView, BaseItemV
             return viewIndex[id];
         };
 
-        _this.removeCalls(function(){
+        _this.removeReferences(function(){
             _this = null;
             viewIndex = null;
             el = null;
