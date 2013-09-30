@@ -22,7 +22,6 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
 
 
         },
-        extensions: [],
         render: function () {
             var _this = this;
             _this.beforeRender();
