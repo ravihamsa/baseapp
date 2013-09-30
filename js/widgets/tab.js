@@ -24,20 +24,23 @@ define([
         var View = SingleSelect.View.extend({
             template: '<div class="prop-tabs"><ul class="ib-list"></ul></div><div class="tab-panes"></div> ',
             postRender: function() {
+                var _this = this;
                 var items = this.model.get('items');
                 var navListView = baseUtil.createView({
                     View: Base.CollectionView,
                     collection: items,
-                    el: this.$('.ib-list'),
-                    itemView: NavItemView
+                    el: _this.$('.ib-list'),
+                    itemView: NavItemView,
+                    parentView:_this
                 });
 
                 var tabListView = baseUtil.createView({
                     View: Base.CollectionView,
                     tagName: 'div',
                     collection: items,
-                    el: this.$('.tab-panes'),
-                    itemView: TabItemView
+                    el: _this.$('.tab-panes'),
+                    itemView: TabItemView,
+                    parentView:_this
                 });
 
 

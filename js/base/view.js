@@ -1,24 +1,26 @@
 define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) {
-
     var BaseView = Backbone.View.extend({
         constructor: function (options) {
             var _this = this;
             Backbone.View.call(_this, options);
+            _this.removeQue = [];
             _.each(setupFunctions, function (func) {
                 func.call(_this, options);
             });
             /*
-            _.each(_this.extensions, function (func) {
-                func.call(_this, options);
-            });
+             _.each(_this.extensions, function (func) {
+             func.call(_this, options);
+             });
 
-            var addOns = _this.getOption('addOns')
-            if (addOns && addOns.length > 0) {
-                _.each(addOns, function (func) {
-                    func.call(_this, options);
-                })
-            }
-            */
+             var addOns = _this.getOption('addOns')
+             if (addOns && addOns.length > 0) {
+             _.each(addOns, function (func) {
+             func.call(_this, options);
+             })
+             }
+             */
+
+
         },
         extensions: [],
         render: function () {
@@ -75,8 +77,25 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
             if (!this[methodName]) {
                 this[methodName] = func;
             }
+        },
+        remove:function(){
+            console.log('removing view');
+            this.removeChildViews();
+            Backbone.View.prototype.remove.call(this);
+            this.removeCalls();
+            this.removeQue = null;
+        },
+        removeCalls:function(func){
+            if(func){
+                this.removeQue.push(func);
+            }else{
+                _.each(this.removeQue,function(func){
+                    func.call(this);
+                })
+            }
         }
     });
+
 
 
     var bindDataEvents = function () {
@@ -91,7 +110,7 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
             events = event.split(splitter);
             _.each(handlers, function (shandler) {
                 _.each(events, function (sevent) {
-                    modelOrCollection.on(sevent, function () {
+                    _this.listenTo(modelOrCollection,sevent, function () {
                         if (_this[shandler]) {
                             var args = Array.prototype.slice.call(arguments);
                             args.unshift(sevent);
@@ -118,17 +137,16 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
 
         var cleanUpState = function () {
             if (statedView) {
-                statedView.off();
                 statedView.remove();
             }
-
         };
 
         var renderState = function (StateView) {
             statedView = util.createView({
                 View: StateView,
                 model: _this.model,
-                parentEl: _this.$('.state-view')
+                parentEl: _this.$('.state-view'),
+                parentView:_this
             });
         };
 
@@ -155,22 +173,32 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
             return state;
         };
 
+        _this.removeCalls(function(){
+            stateConfigs = null;
+            state=null;
+            statedView=null;
+            _this=null;
+        })
+
     };
 
     var setupTemplateEvents = function () {
-        (function (that) {
-            var template = that.getOption('template') || that.template;
-            //if (template) {
-            that.setTemplate = function (newTemplate) {
-                template = newTemplate;
-                that.render();
-            };
+        var _this = this;
+        var template = _this.getOption('template') || _this.template;
+        //if (template) {
+        _this.setTemplate = function (newTemplate) {
+            template = newTemplate;
+            _this.render();
+        };
 
-            that.getTemplate = function () {
-                return template;
-            };
-            //}
-        })(this);
+        _this.getTemplate = function () {
+            return template;
+        };
+
+        _this.removeCalls(function(){
+            template=null;
+            _this=null;
+        })
     };
 
     var setupSubViews = function () {
@@ -179,13 +207,10 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
 
         var subViewConfigs = _this.getOption('views');
 
-        if (!subViewConfigs) {
-            return;
-        }
-
         _.each(subViewConfigs, function (viewConfig, viewName) {
             if (viewConfig.parentEl && typeof viewConfig.parentEl === 'string') {
                 viewConfig.parentEl = _this.$(viewConfig.parentEl);
+                viewConfig.parentView = _this;
             }
             views[viewName] = util.createView(viewConfig);
         });
@@ -207,6 +232,12 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
             return _this.getSubModel(viewId).get(attributeName);
         }
 
+        _this.removeCalls(function(){
+            subViewConfigs=null;
+            views=null;
+            _this=null;
+        })
+
     };
 
 
@@ -214,7 +245,7 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
         var _this = this;
         var model = _this.model;
         if (model) {
-            model.on('change', _.bind(watchAttributes, _this));
+            _this.listenTo(model,'change', _.bind(watchAttributes, _this));
             syncAttributes.call(_this, model);
         }
 
@@ -279,7 +310,7 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
         var _this = this;
         var renderEvents = this.getOption('renderEvents') || this.renderEvents;
         if (renderEvents && renderEvents.length > 0) {
-            _this.model.on(renderEvents.join(' '), function () {
+            _this.listenTo(_this.model,renderEvents.join(' '), function () {
                 _this.render.call(_this);
             });
         }
@@ -342,9 +373,36 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
         }
 
 
+        _this.removeCalls(function(){
+            requestConfigs=null;
+            runningRequestCount=null;
+            _this=null;
+        })
+
+
     };
 
-    var setupFunctions = [bindDataEvents, setupMetaRequests, setupTemplateEvents, setupAttributeWatch, setupActionNavigateAnchors, setupRenderEvents, setupStateEvents];
+    var setupChildViews = function(){
+        var _this = this;
+        var childViews =[];
+        _this.addChildView = function(view){
+            childViews.push(view);
+        }
+        _this.removeChildViews = function(){
+            _.each(childViews,function(view){
+                if(view && view.remove){
+                    view.remove();
+                }
+            });
+        }
+
+        _this.removeCalls(function(){
+            childViews=null;
+            _this=null;
+        })
+    }
+
+    var setupFunctions = [bindDataEvents, setupMetaRequests, setupTemplateEvents, setupAttributeWatch, setupActionNavigateAnchors, setupRenderEvents, setupStateEvents, setupChildViews];
 
     return BaseView;
 });

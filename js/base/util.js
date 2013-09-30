@@ -72,14 +72,16 @@ define(function() {
         createView: function(config) {
 
             var view;
-            var viewTye = 'model';
+            var viewType = 'model';
+
+            var parentView = config.parentView;
 
             if (config.collection || config.Collection) {
-                viewTye = 'collection';
+                viewType = 'collection';
             }
 
 
-            if (viewTye === 'model') {
+            if (viewType === 'model') {
                 if (config.Model) {
                     config.model = new config.Model(config.attributes);
                 }
@@ -89,9 +91,7 @@ define(function() {
                 }
             }
 
-
-
-            var filteredConfig = _.omit(config, 'Collection', 'Model', 'parentEl', 'skipRender');
+            var filteredConfig = _.omit(config, 'Collection', 'Model', 'parentEl', 'skipRender', 'parentView');
             view = new config.View(filteredConfig);
 
             if (view) {
@@ -107,6 +107,11 @@ define(function() {
                     }
                     view.$el.appendTo(config.parentEl);
                 }
+            }
+
+
+            if(parentView){
+                parentView.addChildView(view);
             }
 
             return view;

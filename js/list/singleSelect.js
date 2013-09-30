@@ -5,12 +5,14 @@ define(['base'], function(Base) {
     var View = Base.View.extend({
         template: '<div class="list-view"></div>',
         postRender: function() {
+            var _this = this;
             var items = this.model.get('items');
             var listView = baseUtil.createView({
                 View: Base.CollectionView,
                 collection: items,
-                parentEl: this.$('.list-view'),
-                itemView: this.getOption('ItemView') || ItemView
+                parentEl: _this.$('.list-view'),
+                itemView: _this.getOption('ItemView') || ItemView,
+                parentView:_this
             });
         },
         actionHandler: function(selectedId) {

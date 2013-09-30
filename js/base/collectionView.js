@@ -13,7 +13,7 @@ define(['base/view', 'base/itemView', 'base/util'], function(BaseView, BaseItemV
             var index = coll.indexOf(model);
 
             var ItemView = _this.getOption('itemView') || BaseItemView;
-            var view = util.createView({model: model, className: 'id-' + model.id, View: ItemView});
+            var view = util.createView({model: model, className: 'id-' + model.id, View: ItemView, parentView:_this});
             viewIndex[model.id] = view;
 
             var index = coll.indexOf(model);
@@ -36,6 +36,13 @@ define(['base/view', 'base/itemView', 'base/util'], function(BaseView, BaseItemV
         _this.getModelViewAt = function(id) {
             return viewIndex[id];
         };
+
+        _this.removeCalls(function(){
+            _this = null;
+            viewIndex = null;
+            el = null;
+            coll = null;
+        })
 
 
     };
