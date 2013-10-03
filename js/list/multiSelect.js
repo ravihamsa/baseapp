@@ -8,54 +8,57 @@ define(['base', 'list/singleSelect'], function(Base, SingleSelect) {
             var _this = this;
             Base.Model.call(_this, options);
             _.each(setupFunctions, function(func) {
-                func.call(_this, options);
+                func(_this, {});
             });
         }
     });
 
 
-    function setupMultiSelection() {
+    function setupMultiSelection(context, varObj) {
 
-        var _this = this, selected = [];
+        varObj.selected = [];
+        varObj.coll = context.get('items');
 
-        var coll = _this.get('items');
+        if (!varObj.coll) {
+            varObj.coll = new ItemCollection();
+            context.set('items', varObj.coll);
+        }
 
 
-
-        _this.getSelected = function() {
-            return selected;
+        context.getSelected = function() {
+            return varObj.selected;
         };
 
-        _this.setSelectedById = function(id) {
-            var curItem = coll.get(id);
+        context.setSelectedById = function(id) {
+            var curItem = varObj.coll.get(id);
+            curItem.toggleSelect();
+            context.updateSelected();
+        };
+
+        context.setSelected = function(curItem) {
             curItem.toggleSelect();
             updateSelected();
         };
 
-        _this.setSelected = function(curItem) {
-            curItem.toggleSelect();
-            updateSelected();
-        };
-
-        _this.selectAll = function() {
-            coll.each(function(model) {
+        context.selectAll = function() {
+            varObj.coll.each(function(model) {
                 model.select();
             });
             updateSelected();
         };
 
-        _this.selectNone = function() {
-            coll.each(function(model) {
+        context.selectNone = function() {
+            varObj.coll.each(function(model) {
                 model.deselect();
             });
-            updateSelected();
+            context.updateSelected();
         };
-        var updateSelected = function() {
-            selected = coll.where({selected: true});
-            _this.set('selectedCount', selected.length);
+        context.updateSelected = function() {
+            varObj.selected = varObj.coll.where({selected: true});
+            context.set('selectedCount', varObj.selected.length);
         };
 
-        updateSelected();
+        context.updateSelected();
     }
 
     return {

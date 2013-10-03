@@ -5,7 +5,7 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
             Backbone.View.call(_this, options);
             _this.removeQue = [];
             _.each(setupFunctions, function (func) {
-                func.call(_this, options);
+                func(_this);
             });
             /*
              _.each(_this.extensions, function (func) {
@@ -32,7 +32,7 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
                         _this.model = new BaseModel();
                     }
                     _this.renderTemplate(templateFunction);
-                    setupSubViews.call(_this);
+                    setupSubViews(_this);
                     if (_this.setState) {
                         var defaultState = _.keys(_this.getOption('states'))[0];
                         _this.setState(_this.getState() || _this.getOption('state') || defaultState);
@@ -96,11 +96,10 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
 
 
 
-    var bindDataEvents = function () {
-        var _this = this;
-        var modelOrCollection = _this.model || _this.collection;
-        var eventList, _this;
-        eventList = _this.dataEvents;
+    var bindDataEvents = function (context) {
+        var modelOrCollection = context.model || context.collection;
+        var eventList;
+        eventList = context.dataEvents;
         _.each(eventList, function (handler, event) {
             var events, handlers, splitter;
             splitter = /\s+/;
@@ -108,11 +107,11 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
             events = event.split(splitter);
             _.each(handlers, function (shandler) {
                 _.each(events, function (sevent) {
-                    _this.listenTo(modelOrCollection,sevent, function () {
-                        if (_this[shandler]) {
+                    context.listenTo(modelOrCollection,sevent, function () {
+                        if (context[shandler]) {
                             var args = Array.prototype.slice.call(arguments);
                             args.unshift(sevent);
-                            _this[shandler].apply(_this, args);
+                            context[shandler].apply(_this, args);
                         } else {
                             throw shandler + ' Not Defined';
                         }
@@ -122,9 +121,9 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
         });
     };
 
-    var setupStateEvents = function () {
-        var _this = this;
-        var stateConfigs = _this.getOption('states');
+    var setupStateEvents = function (context) {
+
+        var stateConfigs = context.getOption('states');
         if (!stateConfigs) {
             return;
         }
@@ -142,13 +141,13 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
         var renderState = function (StateView) {
             statedView = util.createView({
                 View: StateView,
-                model: _this.model,
-                parentEl: _this.$('.state-view'),
-                parentView:_this
+                model: context.model,
+                parentEl: context.$('.state-view'),
+                parentView:context
             });
         };
 
-        _this.setState = function (toState) {
+        context.setState = function (toState) {
             if (typeof toState === 'string') {
                 if (state === toState) {
                     return;
@@ -167,53 +166,52 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
             }
         };
 
-        _this.getState = function () {
+        context.getState = function () {
             return state;
         };
 
-        _this.removeReferences(function(){
+        context.removeReferences(function(){
             stateConfigs = null;
             state=null;
             statedView=null;
-            _this=null;
+            context=null;
         })
 
     };
 
-    var setupTemplateEvents = function () {
-        var _this = this;
-        var template = _this.getOption('template') || _this.template;
+    var setupTemplateEvents = function (context) {
+
+        var template = context.getOption('template') || context.template;
         //if (template) {
-        _this.setTemplate = function (newTemplate) {
+        context.setTemplate = function (newTemplate) {
             template = newTemplate;
-            _this.render();
+            context.render();
         };
 
-        _this.getTemplate = function () {
+        context.getTemplate = function () {
             return template;
         };
 
-        _this.removeReferences(function(){
+        context.removeReferences(function(){
             template=null;
-            _this=null;
+            context=null;
         })
     };
 
-    var setupSubViews = function () {
-        var _this = this;
+    var setupSubViews = function (context) {
         var views = {};
 
-        var subViewConfigs = _this.getOption('views');
+        var subViewConfigs = context.getOption('views');
 
         _.each(subViewConfigs, function (viewConfig, viewName) {
             if (viewConfig.parentEl && typeof viewConfig.parentEl === 'string') {
-                viewConfig.parentEl = _this.$(viewConfig.parentEl);
-                viewConfig.parentView = _this;
+                viewConfig.parentEl = context.$(viewConfig.parentEl);
+                viewConfig.parentView = context;
             }
             views[viewName] = util.createView(viewConfig);
         });
 
-        _this.getSubView = function (id) {
+        context.getSubView = function (id) {
             var subView = views[id];
             if (subView) {
                 return subView;
@@ -222,29 +220,29 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
             }
         };
 
-        _this.getSubModel = function (viewId) {
-            return _this.getSubView(viewId).model;
+        context.getSubModel = function (viewId) {
+            return context.getSubView(viewId).model;
         }
 
-        _this.getSubAttribute = function (viewId, attributeName) {
-            return _this.getSubModel(viewId).get(attributeName);
+        context.getSubAttribute = function (viewId, attributeName) {
+            return context.getSubModel(viewId).get(attributeName);
         }
 
-        _this.removeReferences(function(){
+        context.removeReferences(function(){
             subViewConfigs=null;
             views=null;
-            _this=null;
+            context=null;
         })
 
     };
 
 
-    var setupAttributeWatch = function () {
-        var _this = this;
-        var model = _this.model;
+    var setupAttributeWatch = function (context) {
+
+        var model = context.model;
         if (model) {
-            _this.listenTo(model,'change', _.bind(watchAttributes, _this));
-            syncAttributes.call(_this, model);
+            context.listenTo(model,'change', _.bind(watchAttributes, context));
+            syncAttributes.call(context, model);
         }
 
     };
@@ -279,8 +277,8 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
         }
     };
 
-    var setupActionNavigateAnchors = function () {
-        var _this = this;
+    var setupActionNavigateAnchors = function (context) {
+
         var verifyPropagation = function (e) {
             if (e.actionHandled) {
                 e.stopPropagation();
@@ -288,51 +286,56 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
             }
         };
 
-        if (_this.actionHandler) {
-            _this.$el.on('click', '.action', function (e) {
+        if (context.actionHandler) {
+            context.$el.on('click', '.action', function (e) {
                 e.preventDefault();
                 var target = $(e.currentTarget);
                 var action = target.attr('href').substr(1);
-                _this.actionHandler.call(_this, action, e);
+                context.actionHandler.call(context, action, e);
                 verifyPropagation(e);
             });
         }
 
 
-        _this.$el.on('click', '.dummy', function (e) {
+        context.$el.on('click', '.dummy', function (e) {
             e.preventDefault();
         });
+
+        context.removeReferences(function(){
+            context.$el.off();
+            context=null;
+        })
     };
 
-    var setupRenderEvents = function () {
-        var _this = this;
-        var renderEvents = this.getOption('renderEvents') || this.renderEvents;
+    var setupRenderEvents = function (context) {
+
+        var renderEvents = context.getOption('renderEvents') || context.renderEvents;
         if (renderEvents && renderEvents.length > 0) {
-            _this.listenTo(_this.model,renderEvents.join(' '), function () {
-                _this.render.call(_this);
+            context.listenTo(context.model,renderEvents.join(' '), function () {
+                context.render.call(context);
             });
         }
 
     };
 
 
-    var setupMetaRequests = function () {
-        var _this = this;
-        var requestConfigs = _this.getOption('requests') || _this.requests;
+    var setupMetaRequests = function (context) {
+
+        var requestConfigs = context.getOption('requests') || context.requests;
         var runningRequestCount = 0;
 
         var bumpLoadingUp = function () {
             runningRequestCount++;
-            _this.loadingHandler.call(_this, true);
+            context.loadingHandler.call(context, true);
         }
 
         var bumpLoadingDown = function () {
             runningRequestCount--;
             if (runningRequestCount === 0) {
-                _this.loadingHandler.call(_this, false);
+                context.loadingHandler.call(context, false);
             }
         }
-        _this.addRequest = function (config, callback) {
+        context.addRequest = function (config, callback) {
             var configArray = config;
             if (!_.isArray(configArray)) {
                 configArray = [configArray];
@@ -357,46 +360,47 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
             return requestPromise;
         };
 
-        _this.loadMeta = function () {
-            if (!_this.metaDef) {
-                var def = requestConfigs ? _this.addRequest(requestConfigs, function () {
-                    var requestsParser = _this.getOption('requestsParser');
+        context.loadMeta = function () {
+            if (!context.metaDef) {
+                var def = requestConfigs ? context.addRequest(requestConfigs, function () {
+                    var requestsParser = context.getOption('requestsParser');
                     if (requestsParser) {
-                        requestsParser.apply(_this, arguments);
+                        requestsParser.apply(context, arguments);
                     }
                 }) : $.when({});
-                _this.metaDef = def;
+                context.metaDef = def;
             }
-            return _this.metaDef;
+            return context.metaDef;
         }
 
 
-        _this.removeReferences(function(){
+        context.removeReferences(function(){
             requestConfigs=null;
             runningRequestCount=null;
-            _this=null;
+            context=null;
         })
 
 
     };
 
-    var setupChildViews = function(){
-        var _this = this;
+    var setupChildViews = function(context){
+
         var childViews =[];
-        _this.addChildView = function(view){
+        context.addChildView = function(view){
             childViews.push(view);
         }
-        _this.removeChildViews = function(){
+        context.removeChildViews = function(){
             _.each(childViews,function(view){
                 if(view && view.remove){
                     view.remove();
                 }
             });
+            childViews = [];
         }
 
-        _this.removeReferences(function(){
+        context.removeReferences(function(){
             childViews=null;
-            _this=null;
+            context=null;
         })
     }
 

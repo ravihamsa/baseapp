@@ -58,20 +58,20 @@ define(['base'], function (Base) {
             var _this = this;
             Base.Model.call(_this, options);
             _.each(setupFunctions, function (func) {
-                func.call(_this, options);
+                func(_this,  {});
             });
         }
     });
 
-    function setupSingleSelection() {
+    function setupSingleSelection(model) {
 
-        var _this = this, selected, previousSelected;
+        var selected, previousSelected;
 
-        var coll = _this.get('items');
+        var coll = model.get('items');
 
         if (!coll) {
             coll = new ItemCollection();
-            _this.set('items', coll);
+            model.set('items', coll);
         }
 
         var selectedItem = coll.findWhere({selected: true});
@@ -81,18 +81,18 @@ define(['base'], function (Base) {
         }
 
         var updateSelected = function () {
-            _this.set('selectedItem', selected);
+            model.set('selectedItem', selected);
         };
 
-        _this.getSelected = function () {
+        model.getSelected = function () {
             return selected;
         };
 
-        _this.prevSelected = function () {
+        model.prevSelected = function () {
             return previousSelected;
         };
 
-        _this.setSelectedById = function (id) {
+        model.setSelectedById = function (id) {
             var curItem = coll.get(id);
             if (!selected) {
                 selected = curItem;
@@ -110,7 +110,7 @@ define(['base'], function (Base) {
             updateSelected();
         };
 
-        _this.setSelected = function (curItem) {
+        model.setSelected = function (curItem) {
             if (!curItem) {
                 updateSelected();
                 return;
@@ -133,15 +133,15 @@ define(['base'], function (Base) {
             updateSelected();
         };
 
-        _this.clearSelection = function () {
+        model.clearSelection = function () {
             previousSelected = selected;
             selected = null;
             previousSelected.deselect();
             updateSelected();
         };
 
-        _this.selectFirst = function () {
-            _this.setSelected(coll.first());
+        model.selectFirst = function () {
+            model.setSelected(coll.first());
         }
 
     }
