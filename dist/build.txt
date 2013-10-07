@@ -4,6 +4,7 @@ js/base.js
 js/base/util.js
 js/base/router.js
 js/base/dataLoader.js
+js/base/formatter.js
 js/base/app.js
 js/base/model.js
 js/base/view.js
@@ -13,6 +14,7 @@ js/widgets/header.js
 js/base/root.js
 js/base/itemView.js
 js/base/collectionView.js
+js/base/configurableModel.js
 js/base/collection.js
 js/base/helpers.js
 js/base.js
@@ -45,6 +47,7 @@ js/base-list.js
 js/base/util.js
 js/base/router.js
 js/base/dataLoader.js
+js/base/formatter.js
 js/base/app.js
 js/base/model.js
 js/base/view.js
@@ -54,6 +57,7 @@ js/widgets/header.js
 js/base/root.js
 js/base/itemView.js
 js/base/collectionView.js
+js/base/configurableModel.js
 js/base/collection.js
 js/base/helpers.js
 js/base.js
@@ -67,6 +71,7 @@ js/base-list-widgets.js
 js/base/util.js
 js/base/router.js
 js/base/dataLoader.js
+js/base/formatter.js
 js/base/app.js
 js/base/model.js
 js/base/view.js
@@ -76,6 +81,7 @@ js/widgets/header.js
 js/base/root.js
 js/base/itemView.js
 js/base/collectionView.js
+js/base/configurableModel.js
 js/base/collection.js
 js/base/helpers.js
 js/base.js
