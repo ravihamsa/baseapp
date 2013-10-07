@@ -265,7 +265,7 @@ define([
                     model: model,
                     el: viewEl
                 });
-                view.afterRender();
+                view.postRender();
                 view.syncAttributes();
             } else {
                 view = new ElementView({

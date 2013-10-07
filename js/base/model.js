@@ -76,11 +76,8 @@ define(function() {
             var attributes = _this.toJSON();
 
             var filtered = _.every(filtersArray,function(filter){
-                console.log(filter, filterMethods[filter.expr].call(_this,filter, attributes[filter.column]))
                 return filterMethods[filter.expr].call(_this,filter, attributes[filter.column])
             })
-
-            console.log(filtered);
             return filtered;
         }
     });
@@ -91,13 +88,13 @@ define(function() {
             return filter.value === value;
         },
         'startsWith':function(filter, value){
-            return new RegExp('^'+value,'i').test(filter.value);
+            return new RegExp('^'+filter.value,'i').test(value);
         },
         'endsWith':function(filter, value){
-            return new RegExp(value+'$','i').test(filter.value);
+            return new RegExp(filter.value+'$','i').test(value);
         },
         'has':function(filter, value){
-            return new RegExp(value,'i').test(filter.value);
+            return new RegExp(filter.value,'i').test(value);
         }
     }
 

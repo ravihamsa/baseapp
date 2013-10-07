@@ -1,4 +1,4 @@
-define(['require', 'base/router', 'base/dataLoader'], function (require, Router, dataLoader) {
+define(['require', 'base/router', 'base/dataLoader', 'base/formatter'], function (require, Router, dataLoader) {
 
     var hex_md5 = window.hex_md5;
 
@@ -116,9 +116,16 @@ define(['require', 'base/router', 'base/dataLoader'], function (require, Router,
             return def;
         },
         beautifyId: function (s) {
+            s = s.replace(/_([a-z])/g, function (s) {
+                return s.toUpperCase()
+            });
+
+            s= s.replace(/_/g,'');
+
             s = s.replace(/([A-Z])/g, function (s) {
                 return ' ' + s
             });
+
             return s.replace(/(^.)/g, function (s) {
                 return s.toUpperCase()
             });
@@ -129,8 +136,33 @@ define(['require', 'base/router', 'base/dataLoader'], function (require, Router,
         getTemplateIndex: function () {
             return templateIndex;
         },
+        getFormatted:function(value, format, dataObj){
+            var formatter = formatterIndex[format];
+            if(formatter){
+                return formatter(value, dataObj);
+            }else{
+                return value;
+            }
+
+        },
+        addFormatter:function(type, formatterFunction){
+            if(formatterIndex[type]){
+                throw new Error('formatter already exist');
+            }else{
+                this.setFormatter.apply(null, arguments);
+            }
+        },
+        setFormatter:function(type, formatterFunction){
+            formatterIndex[type] = formatterFunction;
+        },
         getHash: getHash
     };
+
+
+    var formatterIndex = {
+
+    };
+
 
     return app;
 

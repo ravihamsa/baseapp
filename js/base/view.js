@@ -43,7 +43,9 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
             }
 
             var metaLoadSuccess = function () {
-
+                if(_this.removeChildViews){
+                    _this.removeChildViews();
+                }
                 continueRender();
             }
 
@@ -111,7 +113,7 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
                         if (context[shandler]) {
                             var args = Array.prototype.slice.call(arguments);
                             args.unshift(sevent);
-                            context[shandler].apply(_this, args);
+                            context[shandler].apply(context, args);
                         } else {
                             throw shandler + ' Not Defined';
                         }
