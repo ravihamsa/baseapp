@@ -34,7 +34,7 @@ define([
     });
 
     var CheckboxView = ElementView.extend({
-        template:checkBoxTemplate,
+        template: checkBoxTemplate,
         valueFunction: function () {
             return this.$('input').is(':checked');
         },
@@ -131,6 +131,37 @@ define([
         }
     });
 
+
+    var InputView = ElementView.extend({
+        events: {
+            'change input': 'updateValue',
+            'blur input': 'resetIfDefault',
+            'focus input': 'selectIfDefault',
+            'click input': 'clearIfDefault'
+        },
+        selectIfDefault: function () {
+            var attr = this.model.toJSON();
+            if (attr.value === attr.defaultValue) {
+                this.$('input').select();
+            }
+        },
+        clearIfDefault: function () {
+            var attr = this.model.toJSON();
+            if (attr.value === attr.defaultValue) {
+                this.$('input').val('');
+            }
+        },
+        resetIfDefault: function () {
+            var attr = this.model.toJSON();
+            var inputValue = this.$('input').val();
+            if (attr.defaultValue && inputValue === '') {
+                this.$('input').val(attr.defaultValue);
+            }
+            this.updateValue();
+        }
+    });
+
+
     var HiddenJSONView = ElementView.extend({
         template: '<input type="hidden" value="{{value}}" name="{{name}}" />',
         valueChangeHandler: function (value) {
@@ -165,7 +196,7 @@ define([
     };
 
     var getViewByType = function (type) {
-        return typeViewIndex[type] || ElementView;
+        return typeViewIndex[type] || InputView;
     };
 
     var setViewByType = function (type, View) {

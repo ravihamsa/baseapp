@@ -108,16 +108,7 @@ define(['base/app', 'base', 'widgets/form/validator', 'text!./inputView.html'], 
     var ElementView = Base.View.extend({
         tagName: 'div',
         className: 'element',
-        events: {
-            'change input': 'updateValue',
-            'blur input': 'updateValue',
-            'click': 'setFocus'
-        },
         template: inputViewTemplate,
-        // typeChangeHandler:function(value){
-        //     this.$('input').attr('type', value);
-        // },
-
         postRender: function() {
             this.syncAttributes();
         },
@@ -176,14 +167,6 @@ define(['base/app', 'base', 'widgets/form/validator', 'text!./inputView.html'], 
                 this.model.isElementValid();
             }
 
-        },
-        setFocus: function() {
-            var form = this.$el.closest('form');
-            form.find('.focused').removeClass('focused');
-            this.$el.addClass('focused');
-        },
-        removeFocus: function() {
-            this.$el.removeClass('focused');
         }
     });
 

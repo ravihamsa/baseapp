@@ -1,6 +1,13 @@
 define(function() {
 
     var BaseModel = Backbone.Model.extend({
+        constructor: function (attributes, options) {
+            var _this = this;
+            if(options && options.defaults){
+                _this.defaults = options.defaults;
+            }
+            Backbone.Model.apply(_this, arguments);
+        },
         is: function(attribute) {
             return this.get(attribute) === true;
         },
@@ -17,6 +24,12 @@ define(function() {
             if (this.collection) {
                 this.collection.remove(this);
             }
+        },
+        isDefault:function(attribute, value){
+            return this.defaults[attribute] === value;
+        },
+        setDefault:function(attribute, value){
+            this.defaults[attribute]=value;
         },
         moveUp: function() {
             var coll = this.collection;
