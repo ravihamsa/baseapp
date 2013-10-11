@@ -7,6 +7,7 @@
  */
 define([
     'base/app',
+    'base/util',
     'base',
     'widgets/form/element',
     'widgets/messageStack',
@@ -16,7 +17,7 @@ define([
     'text!./form/selectView.html',
     'text!./form/textAreaView.html',
     'text!./form/buttonView.html'
-], function (app, Base, Element, MessageStack, checkListTemplate, checkBoxTemplate, radioListTemplate, selectViewTemplate, textAreaTemplate, buttonViewTemplate) {
+], function (app, baseUtil, Base, Element, MessageStack, checkListTemplate, checkBoxTemplate, radioListTemplate, selectViewTemplate, textAreaTemplate, buttonViewTemplate) {
     'use strict';
 
     var ElementView = Element.View;
@@ -131,27 +132,27 @@ define([
     var InputView = ElementView.extend({
         events: {
             'change input': 'updateValue',
-            'blur input': 'resetIfDefault',
+            'blur input': 'resetIfEmpty',
             'focus input': 'selectIfDefault',
             'click input': 'clearIfDefault'
         },
         selectIfDefault: function () {
-            var attr = this.model.toJSON();
-            if (attr.value === attr.defaultValue) {
+            if (this.model.isElementDefault()) {
                 this.$('input').select();
             }
         },
         clearIfDefault: function () {
-            var attr = this.model.toJSON();
-            if (attr.value === attr.defaultValue) {
+            if (this.model.isElementDefault()) {
                 this.$('input').val('');
             }
         },
-        resetIfDefault: function () {
-            var attr = this.model.toJSON();
+        resetIfEmpty: function () {
             var inputValue = this.$('input').val();
-            if (attr.defaultValue && inputValue === '') {
-                this.$('input').val(attr.defaultValue);
+            if (inputValue === '') {
+                var attr = this.model.toJSON();
+                if(attr.defaultValue){
+                    this.$('input').val(attr.defaultValue);
+                }
             }
             this.updateValue();
         }
@@ -280,6 +281,7 @@ define([
         },
         addElement: function (model) {
             var attr = model.toJSON();
+            var thisView = this;
             var ElementView = this.typeViewIndex[attr.type] || getViewByType(attr.type);
 
             var name = attr.name;
@@ -295,13 +297,18 @@ define([
                 view.postRender();
                 view.syncAttributes();
             } else {
-                view = new ElementView({
-                    model: model
-                });
+
+                view = baseUtil.createView({
+                    View: ElementView,
+                    model: model,
+                    parentView: thisView
+                })
+
                 var group = attr.group;
                 this.$('.' + groupPrefix + group).append(view.render().el);
             }
-
+        },
+        removeElement: function (model) {
 
         },
         renderGroupContainers: function () {

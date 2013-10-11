@@ -46,7 +46,7 @@ define(['base/app', 'base', 'widgets/form/validator', 'text!./inputView.html'], 
             var activeRules = this.get('activeRules');
             var isActive = _.every(activeRules, function(rule) {
                 var sourceElement = this.collection.get(rule.element);
-                return activeRuleMethods[rule.expr].call(null, sourceElement, rule);
+                return activeRuleMethods[rule.expr].call(this, sourceElement, rule);
             }, this);
             this.set('active', isActive);
         },
@@ -97,6 +97,10 @@ define(['base/app', 'base', 'widgets/form/validator', 'text!./inputView.html'], 
             if (this.collection) {
                 return this.collection.get(siblingName).set('value', value);
             }
+        },
+        isElementDefault:function(){
+            var attributes = this.toJSON();
+            return attributes.value === attributes.defaultValue;
         }
     });
 
@@ -109,6 +113,9 @@ define(['base/app', 'base', 'widgets/form/validator', 'text!./inputView.html'], 
         tagName: 'div',
         className: 'element',
         template: inputViewTemplate,
+        dataEvents:{
+            'forceRender':'render'
+        },
         postRender: function() {
             this.syncAttributes();
         },
@@ -188,7 +195,7 @@ define(['base/app', 'base', 'widgets/form/validator', 'text!./inputView.html'], 
         },
         'function': function(source, rule) {
             var func = rule.func;
-            return func.apply(null, arguments);
+            return func.apply(this, arguments);
         }
     };
 
