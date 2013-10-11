@@ -60,11 +60,7 @@ define([
         template: selectViewTemplate,
         events: {
             'change select': 'updateValue',
-            'blur select': function () {
-                this.updateValue();
-                this.removeFocus();
-            },
-            'click': 'setFocus'
+            'blur select': 'updateValue'
         },
         valueFunction: function () {
             return this.$('select').val();
