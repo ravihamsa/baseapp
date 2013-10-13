@@ -88,6 +88,15 @@ define(['base'], function (Base) {
             return selected;
         };
 
+        model.getSelectedIndex = function () {
+            if(selected!== undefined){
+                return coll.indexOf(selected);
+            }else{
+                return -1;
+            }
+
+        };
+
         model.prevSelected = function () {
             return previousSelected;
         };
@@ -142,6 +151,14 @@ define(['base'], function (Base) {
 
         model.selectFirst = function () {
             model.setSelected(coll.first());
+        }
+
+        model.selectAt = function(index){
+            if(coll.at(index)){
+                model.setSelected(coll.at(index));
+            }else{
+                model.selectFirst();
+            }
         }
 
     }
