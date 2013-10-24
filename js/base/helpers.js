@@ -4,6 +4,11 @@ define(['base/app'], function(app) {
         return element.label || element.name;
     });
 
+
+    Handlebars.registerHelper('string', function(str) {
+        return app.getString(str);
+    });
+
     Handlebars.registerHelper('stringify', function(obj) {
         return JSON.stringify(obj);
     });

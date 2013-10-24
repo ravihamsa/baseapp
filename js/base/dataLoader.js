@@ -2,9 +2,16 @@ define(['require'],function(require){
 
     var requestIndex = {};
     var dataLoader = {};
+    var requestDefaults = {
+        type:'get',
+        params:{},
+        url:'',
+        parser: _.identity
+    }
 
     dataLoader.define = function(id, config){
-        requestIndex[id]=config
+        var requestConfig = _.extend({},requestDefaults, config)
+        requestIndex[id]=requestConfig
     }
 
     var getConfig = dataLoader.getConfig=function(id){

@@ -2,11 +2,12 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
     var BaseView = Backbone.View.extend({
         constructor: function (options) {
             var _this = this;
-            Backbone.View.call(_this, options);
             _this.removeQue = [];
+            Backbone.View.call(_this, options);
             _.each(setupFunctions, function (func) {
                 func(_this);
             });
+
             /*
              _.each(_this.extensions, function (func) {
              func.call(_this, options);
@@ -206,10 +207,7 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
         var subViewConfigs = context.getOption('views');
 
         _.each(subViewConfigs, function (viewConfig, viewName) {
-            if (viewConfig.parentEl && typeof viewConfig.parentEl === 'string') {
-                viewConfig.parentEl = context.$(viewConfig.parentEl);
-                viewConfig.parentView = context;
-            }
+            viewConfig.parentView = context;
             views[viewName] = util.createView(viewConfig);
         });
 
@@ -322,18 +320,19 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
 
 
     var setupMetaRequests = function (context) {
-
         var requestConfigs = context.getOption('requests') || context.requests;
         var runningRequestCount = 0;
 
         var bumpLoadingUp = function () {
             runningRequestCount++;
-            context.loadingHandler.call(context, true);
+            if (runningRequestCount > 0) {
+                context.loadingHandler.call(context, true);
+            }
         }
 
         var bumpLoadingDown = function () {
             runningRequestCount--;
-            if (runningRequestCount === 0) {
+            if (runningRequestCount < 1) {
                 context.loadingHandler.call(context, false);
             }
         }
@@ -345,11 +344,11 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
 
             var defArray = _.map(configArray, function (config) {
                 var def = app.getRequestDef(config);
-                def.always(bumpLoadingDown);
                 if (config.callback) {
                     def.always(config.callback);
                 }
                 bumpLoadingUp();
+                def.always(bumpLoadingDown);
                 return def
             })
 
@@ -379,7 +378,7 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
         context.removeReferences(function(){
             requestConfigs=null;
             runningRequestCount=null;
-            context=null;
+            context = null;
         })
 
 

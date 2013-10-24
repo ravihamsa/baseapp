@@ -11,14 +11,15 @@ define(function() {
         });
         return obj;
     };
-    var objectToParams = function(obj) {
+    var objectToParams = function(obj, separator) {
         var str = [];
+        separator = separator || ';';
 
         _.each(obj, function(value, index) {
             str.push(index + '=' + value);
         });
 
-        return str.join(';');
+        return str.join(separator);
     };
 
 
@@ -107,7 +108,13 @@ define(function() {
                     if (config['replaceHTML']) {
                         config.parentEl.empty();
                     }
-                    view.$el.appendTo(config.parentEl);
+
+                    if(parentView && parentView.$(config.parentEl).length > 0){
+                        view.$el.appendTo(parentView.$(config.parentEl));
+                    }else{
+                        view.$el.appendTo(config.parentEl);
+                    }
+
                 }
             }
 

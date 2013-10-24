@@ -31,8 +31,8 @@ define(function(require) {
         loadApp: function(appId, pageId, params) {
             require(['base/app'], function(baseApp) {
                 var paramsObject = util.paramsToObject(params);
+                baseApp.appModel.clear();
                 paramsObject.appId = appId;
-                paramsObject.pageId = pageId;
                 baseApp.appModel.set(paramsObject);
             });
         }

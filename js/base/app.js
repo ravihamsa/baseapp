@@ -76,8 +76,10 @@ define(['require', 'base/router', 'base/dataLoader', 'base/formatter'], function
         getRequestDef: function (config) {
             var _this = this;
 
+
             //fetch request config for dataLoader request index
             var requestConfig = dataLoader.getConfig(config.id);
+            requestConfig.paramsParser = requestConfig.paramsParser || _.identity;
 
             //default parsers
             var successParser = _this.parseSuccessResponse, failureParser = _this.parseFailureResponse;
@@ -95,7 +97,7 @@ define(['require', 'base/router', 'base/dataLoader', 'base/formatter'], function
 
             if (!def) {
                 def = $.Deferred();
-                var request = dataLoader.getRequest(config.id,config.params);
+                var request = dataLoader.getRequest(config.id,requestConfig.paramsParser(config.params));
 
                 request.done(function (resp) {
                     var parsedResponse = successParser(resp);
@@ -137,6 +139,10 @@ define(['require', 'base/router', 'base/dataLoader', 'base/formatter'], function
             return templateIndex;
         },
         getFormatted:function(value, format, dataObj){
+            if(typeof format === 'function'){
+                return format.apply(null, arguments);
+            }
+
             var formatter = formatterIndex[format];
             if(formatter){
                 return formatter(value, dataObj);

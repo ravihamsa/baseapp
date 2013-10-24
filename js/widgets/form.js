@@ -16,8 +16,9 @@ define([
     'text!./form/radioListView.html',
     'text!./form/selectView.html',
     'text!./form/textAreaView.html',
-    'text!./form/buttonView.html'
-], function (app, baseUtil, Base, Element, MessageStack, checkListTemplate, checkBoxTemplate, radioListTemplate, selectViewTemplate, textAreaTemplate, buttonViewTemplate) {
+    'text!./form/buttonView.html',
+    'text!./form/messageView.html'
+], function (app, baseUtil, Base, Element, MessageStack, checkListTemplate, checkBoxTemplate, radioListTemplate, selectViewTemplate, textAreaTemplate, buttonViewTemplate, messageViewTemplate) {
     'use strict';
 
     var ElementView = Element.View;
@@ -158,6 +159,16 @@ define([
         }
     });
 
+    var MessageView = ElementView.extend({
+        template:messageViewTemplate,
+        valueChangeHandler:function(value){
+            this.$('.message').html(value)
+        },
+        valueFunction:function(){
+            return this.$('.message').html();
+        }
+    })
+
 
     var HiddenJSONView = ElementView.extend({
         template: '<input type="hidden" value="{{value}}" name="{{name}}" />',
@@ -189,6 +200,7 @@ define([
         'hidden': HiddenView,
         'json': HiddenJSONView,
         'submit': ButtonView,
+        'message': MessageView,
         'container': ContainerView
     };
 

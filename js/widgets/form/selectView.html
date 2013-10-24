@@ -4,11 +4,15 @@
     </label>
 
     <div class="controls">
+        <div class="styled_select">
+            <em class="down-arrow">&#9660;</em>
         <select name="{{name}}" class="el-{{name}}">
             {{#each options}}
             <option value="{{id}}">{{name}}</option>
             {{/each}}
         </select>
+        </div>
         <span class="help-inline"></span>
+
     </div>
 </div>
