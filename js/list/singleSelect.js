@@ -14,6 +14,8 @@ define(['base'], function (Base) {
                 itemView: _this.getOption('ItemView') || ItemView,
                 parentView: _this
             });
+
+            this.listView = listView;
         },
         actionHandler: function (selectedId) {
             this.model.setSelectedById(selectedId);
@@ -82,6 +84,7 @@ define(['base'], function (Base) {
 
         var updateSelected = function () {
             model.set('selectedItem', selected);
+            model.trigger('selectionChange', selected, previousSelected);
         };
 
         model.getSelected = function () {

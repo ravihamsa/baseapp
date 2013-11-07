@@ -148,6 +148,10 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
                 parentEl: context.$('.state-view'),
                 parentView:context
             });
+
+            context.listenTo(statedView, 'setState',function(state){
+                context.setState(state);
+            })
         };
 
         context.setState = function (toState) {
