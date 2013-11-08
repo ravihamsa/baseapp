@@ -97,6 +97,21 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
         }
     });
 
+    BaseView.deepExtendMethods = function(methodMap){
+        var viewPrototype = this.prototype;
+        _.each(methodMap,function(func, name){
+            var oldFunc = viewPrototype[name];
+            if(oldFunc){
+                viewPrototype[name] = function(){
+                    oldFunc.apply(this, arguments);
+                    func.apply(this,arguments);
+                };
+            }else{
+                throw new Error('Method with name: '+name + ' doesn\'t exists to deep extend');
+            }
+        });
+    };
+
 
 
     var bindDataEvents = function (context) {
@@ -223,6 +238,10 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
                 throw new Error('No View Defined for id :' + id);
             }
         };
+
+        context.getSubCollection = function (viewId) {
+            return context.getSubView(viewId).collection;
+        }
 
         context.getSubModel = function (viewId) {
             return context.getSubView(viewId).model;
