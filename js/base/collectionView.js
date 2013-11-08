@@ -59,7 +59,8 @@ define(['base/view', 'base/itemView', 'base/util'], function(BaseView, BaseItemV
         tagName: 'ul',
         dataEvents: {
             'add' : 'addHandler',
-            'remove': 'removeHandler'
+            'remove': 'removeHandler',
+            'reset':'resetHandler'
         },
         postRender: function() {
             var _this = this;
@@ -76,6 +77,17 @@ define(['base/view', 'base/itemView', 'base/util'], function(BaseView, BaseItemV
         },
         removeHandler: function(event,model) {
             this.removeItem(model);
+        },
+        resetHandler:function(event, collection, options){
+            var _this = this;
+            var prevModels = options.previousModels;
+            _.each(prevModels,function(model){
+                _this.getViewByModelId(model.id).remove();
+            })
+            collection.each(function(model){
+                _this.addItem(model);
+            })
+
         }
     });
 
