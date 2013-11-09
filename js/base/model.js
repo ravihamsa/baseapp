@@ -25,6 +25,12 @@ define(function() {
                 this.collection.remove(this);
             }
         },
+        insertAfter:function(attributes){
+            var coll = this.collection;
+            var index = coll.indexOf(this);
+            coll.add(attributes, {at:index+1});
+            return coll.at(index+1);
+        },
         isDefault:function(attribute, value){
             return this.defaults[attribute] === value;
         },

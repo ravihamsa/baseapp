@@ -22,18 +22,18 @@ define(['base/view', 'base/itemView', 'base/util'], function(BaseView, BaseItemV
             }else if (index >= coll.length - 1) {
                 view.$el.appendTo(containerEl);
             }else {
-                var beforeView = _this.getViewByModelId(coll.at(index - 1).id);
+                var beforeView = _this.getItemViewByModelId(coll.at(index - 1).id);
                 view.$el.insertAfter(beforeView.$el);
             }
 
         };
 
         _this.removeItem = function(model) {
-            var view = _this.getViewByModelId(model.id);
+            var view = _this.getItemViewByModelId(model.id);
             view.remove();
         };
 
-        _this.getViewByModelId = function(id) {
+        _this.getItemViewByModelId = function(id) {
             return viewIndex[id];
         };
 
@@ -82,7 +82,7 @@ define(['base/view', 'base/itemView', 'base/util'], function(BaseView, BaseItemV
             var _this = this;
             var prevModels = options.previousModels;
             _.each(prevModels,function(model){
-                _this.getViewByModelId(model.id).remove();
+                _this.getItemViewByModelId(model.id).remove();
             })
             collection.each(function(model){
                 _this.addItem(model);
