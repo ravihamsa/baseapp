@@ -37,6 +37,24 @@ define(function() {
         setDefault:function(attribute, value){
             this.defaults[attribute]=value;
         },
+        next:function(){
+            var coll = this.collection;
+            if (!coll) {
+                return;
+            }
+            var index = coll.indexOf(this);
+            if(index === coll.length -1){
+                return;
+            }
+            return coll.at(index+1);
+        },
+        index:function(){
+            var coll = this.collection;
+            if (!coll) {
+                return 0;
+            }
+            return coll.indexOf(this);
+        },
         moveUp: function() {
             var coll = this.collection;
             if (!coll) {

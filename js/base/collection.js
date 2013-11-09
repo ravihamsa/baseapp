@@ -11,6 +11,21 @@ define(['base/app','base/model'], function(baseApp, BaseModel) {
         getOption: function (option) {
             //console.log(option, this.options[option],this[option]);
             return this.options[option] || this[option];
+        },
+        moveTo:function(model1Id, model2Id, position){
+            var index1 = this.get(model1Id).index();
+            var index2 = this.get(model2Id).index();
+
+           var delta;
+            if(index1 < index2){
+                delta = position === 'after'? 0 : -1;
+            }else{
+                delta = position === 'before'? 0 : -1;
+            }
+            index2 += delta;
+            var model1 = this.models.splice(index1, 1)[0];
+            this.models.splice(index2, 0, model1);
+            //this.swapModels(index1, index2);
         }
     });
 
