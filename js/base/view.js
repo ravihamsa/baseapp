@@ -241,15 +241,15 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
 
         context.getSubCollection = function (viewId) {
             return context.getSubView(viewId).collection;
-        }
+        };
 
         context.getSubModel = function (viewId) {
             return context.getSubView(viewId).model;
-        }
+        };
 
         context.getSubAttribute = function (viewId, attributeName) {
             return context.getSubModel(viewId).get(attributeName);
-        }
+        };
 
         context.removeReferences(function(){
             subViewConfigs=null;

@@ -38,6 +38,7 @@ text!widgets/form/radioListView.html
 text!widgets/form/selectView.html
 text!widgets/form/textAreaView.html
 text!widgets/form/buttonView.html
+text!widgets/form/messageView.html
 js/widgets/form.js
 js/widgets/tab.js
 js/widgets.js
@@ -96,6 +97,7 @@ text!widgets/form/radioListView.html
 text!widgets/form/selectView.html
 text!widgets/form/textAreaView.html
 text!widgets/form/buttonView.html
+text!widgets/form/messageView.html
 js/widgets/form.js
 js/list/singleSelect.js
 js/widgets/tab.js
