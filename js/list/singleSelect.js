@@ -91,6 +91,10 @@ define(['base'], function (Base) {
             return selected;
         };
 
+        model.getSelectedId = function () {
+            return selected.id;
+        };
+
         model.getSelectedIndex = function () {
             if(selected!== undefined){
                 return coll.indexOf(selected);
@@ -148,7 +152,9 @@ define(['base'], function (Base) {
         model.clearSelection = function () {
             previousSelected = selected;
             selected = null;
-            previousSelected.deselect();
+            if(previousSelected){
+                previousSelected.deselect();
+            }
             updateSelected();
         };
 
