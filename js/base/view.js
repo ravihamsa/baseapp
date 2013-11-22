@@ -20,8 +20,13 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
              })
              }
              */
+            
+            
 
 
+        },
+        postSetup:function(){
+            
         },
         render: function () {
             var _this = this;
@@ -166,7 +171,7 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
 
             context.listenTo(statedView, 'setState',function(state){
                 context.setState(state);
-            })
+            });
         };
 
         context.setState = function (toState) {

@@ -13,7 +13,7 @@ define(['require'], function (require) {
 
     dataLoader.define = function (id, config) {
         var requestConfig = _.extend({}, requestDefaults, config)
-        requestIndex[id] = requestConfig
+        requestIndex[id] = requestConfig;
     }
 
     var getConfig = dataLoader.getConfig = function (id) {
@@ -29,6 +29,10 @@ define(['require'], function (require) {
         var settings = $.extend(true, {}, requestSettings);
 
         settings.url = serviceRoot + settings.url;
+        
+        if(settings.preRequestParser){
+            dataObj = settings.preRequestParser.call(null, dataObj);
+        }
 
         if (requestSettings.type.toLowerCase() === "post") {
             settings.data = JSON.stringify(dataObj);

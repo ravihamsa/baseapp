@@ -9,8 +9,18 @@ define(['require', 'base/router', 'base/dataLoader', 'base/formatter'], function
     var getTemplateDefByHash = function (hash) {
         return templateIndex[hash];
     };
-    var getRequestDefByHash = function (hash) {
-        return dataIndex[hash];
+    var getRequestDefByHash = function (hash, id) {
+        if(dataIndex[id] && dataIndex[id][hash]){
+            return dataIndex[id][hash];
+        }        
+    };
+    var clearDefById = function ( id) {
+        
+        if(dataIndex[id]){
+            console.log('clearing cache for id', id);
+            delete dataIndex[id];   
+        }
+          
     };
 
 
@@ -57,8 +67,11 @@ define(['require', 'base/router', 'base/dataLoader', 'base/formatter'], function
         cacheTemplate: function (def, hash) {
             templateIndex[hash] = def;
         },
-        cacheData: function (def, hash) {
-            dataIndex[hash] = def;
+        cacheData: function (def, hash, id) {
+            if(!dataIndex[id]){
+                dataIndex[id]=[];
+            }
+            dataIndex[id][hash] = def;
         },
         log: function () {
             console.log.apply(console, arguments);
@@ -84,16 +97,24 @@ define(['require', 'base/router', 'base/dataLoader', 'base/formatter'], function
             //default parsers
             var successParser = _this.parseSuccessResponse, failureParser = _this.parseFailureResponse;
 
+            console.log(requestConfig);
+
             //if defined consider custom parser
             if (requestConfig.parser) {
                 successParser = failureParser = requestConfig.parser;
+            }
+            
+            if(requestConfig.cacheDependencies){
+                _.each(requestConfig.cacheDependencies,function(requestId){
+                    clearDefById(requestId);
+                });
             }
 
             //get hash of id and parameters
             var hash = getHash(JSON.stringify(_.pick(config, 'id', 'params')));
 
             //check if given hash already has a request running;
-            var def = getRequestDefByHash(hash);
+            var def = getRequestDefByHash(hash,config.id);
 
             if (!def) {
                 def = $.Deferred();
@@ -104,9 +125,8 @@ define(['require', 'base/router', 'base/dataLoader', 'base/formatter'], function
                     if (parsedResponse.errors) {
                         def.resolve(parsedResponse.errors);
                     } else {
-                        _this.cacheData(def, hash);
+                        _this.cacheData(def, hash,config.id);
                         def.resolve(parsedResponse);
-
                     }
                 })
 
