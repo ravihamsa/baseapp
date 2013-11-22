@@ -387,7 +387,7 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
         context.loadMeta = function () {
             if (!context.metaDef) {
                 var def = requestConfigs ? context.addRequest(requestConfigs, function () {
-                    var requestsParser = context.getOption('requestsParser');
+                    var requestsParser = context.getOption('metaParser');
                     if (requestsParser) {
                         requestsParser.apply(context, arguments);
                     }

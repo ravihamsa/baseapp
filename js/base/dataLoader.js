@@ -1,30 +1,34 @@
-define(['require'],function(require){
+define(['require'], function (require) {
 
     var requestIndex = {};
     var dataLoader = {};
     var requestDefaults = {
-        type:'get',
-        params:{},
-        url:'',
+        type: 'get',
+        params: {},
+        url: '',
         parser: _.identity
     }
 
-    dataLoader.define = function(id, config){
-        var requestConfig = _.extend({},requestDefaults, config)
-        requestIndex[id]=requestConfig
+    var serviceRoot = '';
+
+    dataLoader.define = function (id, config) {
+        var requestConfig = _.extend({}, requestDefaults, config)
+        requestIndex[id] = requestConfig
     }
 
-    var getConfig = dataLoader.getConfig=function(id){
-        if(requestIndex[id]){
+    var getConfig = dataLoader.getConfig = function (id) {
+        if (requestIndex[id]) {
             return _.clone(requestIndex[id]);
-        }else{
-            throw Error('Undefined request by Id: '+id);
+        } else {
+            throw Error('Undefined request by Id: ' + id);
         }
     }
 
-    dataLoader.getRequest = function(id,dataObj){
+    dataLoader.getRequest = function (id, dataObj) {
         var requestSettings = getConfig(id, dataObj);
         var settings = $.extend(true, {}, requestSettings);
+
+        settings.url = serviceRoot + settings.url;
 
         if (requestSettings.type.toLowerCase() === "post") {
             settings.data = JSON.stringify(dataObj);
@@ -37,6 +41,10 @@ define(['require'],function(require){
             }
             return $.ajax(settings);
         }
+    }
+    
+    dataLoader.setServiceRoot = function(root){
+        serviceRoot = root;
     }
 
     return dataLoader;

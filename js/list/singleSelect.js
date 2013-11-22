@@ -72,7 +72,9 @@ define(['base'], function (Base) {
         var coll = model.get('items');
 
         if (!coll) {
-            coll = new ItemCollection();
+            
+            var ItemCollectionClass = model.getOption('ItemCollection') || ItemCollection;
+            coll = new ItemCollectionClass();
             model.set('items', coll);
         }
 
