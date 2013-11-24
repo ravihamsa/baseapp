@@ -97,7 +97,7 @@ define(['require', 'base/router', 'base/dataLoader', 'base/formatter'], function
             //default parsers
             var successParser = _this.parseSuccessResponse, failureParser = _this.parseFailureResponse;
 
-            console.log(requestConfig);
+            //console.log(requestConfig);
 
             //if defined consider custom parser
             if (requestConfig.parser) {

@@ -30,6 +30,7 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
         },
         render: function () {
             var _this = this;
+            _this.trigger('beforeRender');
             _this.beforeRender();
 
             var continueRender = function () {
@@ -44,6 +45,7 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
                         _this.setState(_this.getState() || _this.getOption('state') || defaultState);
                     }
                     _this.postRender();
+                    _this.trigger('postRender');
                 });
 
             }
