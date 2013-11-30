@@ -73,7 +73,7 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
             this.$el.html(templateFunction(this.model.toJSON(useDeepJSON)));
         },
         getOption: function (option) {
-            //console.log(option, this.options[option],this[option]);
+            //console.log(this.$el[0],option, this.options[option],this[option]);
             return this.options[option] || this[option];
         },
         loadingHandler: function (isLoading) {
@@ -245,6 +245,10 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
                 throw new Error('No View Defined for id :' + id);
             }
         };
+
+        context.getAllSubViews = function(){
+            return views;
+        }
 
         context.getSubCollection = function (viewId) {
             return context.getSubView(viewId).collection;
