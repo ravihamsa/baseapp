@@ -1,4 +1,4 @@
-define(['require', 'base/router', 'base/dataLoader', 'base/formatter'], function (require, Router, dataLoader) {
+define(['require', 'base/router', 'base/dataLoader', 'base/util', 'base/formatter'], function (require, Router, dataLoader, baseUtil) {
 
     var hex_md5 = window.hex_md5;
 
@@ -100,8 +100,8 @@ define(['require', 'base/router', 'base/dataLoader', 'base/formatter'], function
             //console.log(requestConfig);
 
             //if defined consider custom parser
-            if (requestConfig.parser) {
-                successParser = failureParser = requestConfig.parser;
+            if (requestConfig.responseParser) {
+                successParser = failureParser = requestConfig.responseParser;
             }
             
             if(requestConfig.cacheDependencies){
@@ -109,6 +109,8 @@ define(['require', 'base/router', 'base/dataLoader', 'base/formatter'], function
                     clearDefById(requestId);
                 });
             }
+
+            config.params = requestConfig.paramsParser(config.params);
 
             //get hash of id and parameters
             var hash = getHash(JSON.stringify(_.pick(config, 'id', 'params')));
@@ -118,11 +120,11 @@ define(['require', 'base/router', 'base/dataLoader', 'base/formatter'], function
 
             if (!def) {
                 def = $.Deferred();
-                var request = dataLoader.getRequest(config.id,requestConfig.paramsParser(config.params));
+                var request = dataLoader.getRequest(config.id,config.params);
 
                 request.done(function (resp) {
                     var parsedResponse = successParser(resp);
-                    if (parsedResponse.errors) {
+                    if (parsedResponse.errors && parsedResponse.errors.length > 0) {
                         def.resolve(parsedResponse.errors);
                     } else {
                         _this.cacheData(def, hash,config.id);
@@ -180,6 +182,12 @@ define(['require', 'base/router', 'base/dataLoader', 'base/formatter'], function
         },
         setFormatter:function(type, formatterFunction){
             formatterIndex[type] = formatterFunction;
+        },
+        getUrl:function(appId, pageId, params){
+            return '#'+appId+'/'+pageId+'/'+baseUtil.objectToParams(params);
+        },
+        navigateToPage:function(appId, pageId, params){
+            app.router.navigate(app.getUrl.apply(app, arguments), {trigger:true});
         },
         getHash: getHash
     };

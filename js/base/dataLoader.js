@@ -9,7 +9,7 @@ define(['require'], function (require) {
         parser: _.identity
     }
 
-    var serviceRoot = '';
+    var serviceRoot = 'http://pt.eiris.in/';
 
     dataLoader.define = function (id, config) {
         var requestConfig = _.extend({}, requestDefaults, config)
@@ -30,8 +30,8 @@ define(['require'], function (require) {
 
         settings.url = serviceRoot + settings.url;
         
-        if(settings.preRequestParser){
-            dataObj = settings.preRequestParser.call(null, dataObj);
+        if(settings.paramParser){
+            dataObj = settings.paramParser.call(null, dataObj);
         }
 
         if (requestSettings.type.toLowerCase() === "post") {

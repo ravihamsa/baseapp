@@ -3,6 +3,8 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
         constructor: function (options) {
             var _this = this;
             _this.removeQue = [];
+            _this.removed = false;
+            _this.rendered = false;
             Backbone.View.call(_this, options);
             _.each(setupFunctions, function (func) {
                 func(_this);
@@ -28,13 +30,23 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
         postSetup:function(){
             
         },
+        postMetaLoad:function(){
+
+        },
         render: function () {
             var _this = this;
-            _this.trigger('beforeRender');
+            _this.$el.addClass('rendering');
+            var time = new Date().getTime();
             _this.beforeRender();
 
             var continueRender = function () {
-                app.getTemplateDef(_this.getTemplate()).done(function (templateFunction) {
+
+                if(_this.removeChildViews){
+                    _this.removeChildViews();
+                }
+
+
+                app.getTemplateDef(_this.getTemplate()).done(ifNotRemoved(_this, function (templateFunction) {
                     if (!_this.model) {
                         _this.model = new BaseModel();
                     }
@@ -45,20 +57,27 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
                         _this.setState(_this.getState() || _this.getOption('state') || defaultState);
                     }
                     _this.postRender();
-                    _this.trigger('postRender');
-                });
+                    _this.$el.removeClass('rendering');
+                    var diffTime = new Date().getTime() - time;
+                    if(diffTime > 20){
+                        console.warn(this.$el[0], diffTime);
+                    }
+                    _this.rendered = true;
+                }));
 
-            }
+            };
 
             var metaLoadSuccess = function () {
-                if(_this.removeChildViews){
-                    _this.removeChildViews();
-                }
+                _this.postMetaLoad.apply(_this, arguments);
+                continueRender();
+            };
+
+            if(!_this.rendered){
+                var metaDef = _this.loadMeta();
+                metaDef.done(ifNotRemoved(_this, metaLoadSuccess));
+            }else{
                 continueRender();
             }
-
-            var metaDef = _this.loadMeta();
-            metaDef.done(metaLoadSuccess)
             return _this;
         },
         postRender: function () {
@@ -92,6 +111,7 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
             Backbone.View.prototype.remove.call(this);
             this.removeReferences();
             this.removeQue = null;
+            this.removed = true;
         },
         removeReferences:function(func){
             if(func){
@@ -357,19 +377,21 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
         var requestConfigs = context.getOption('requests') || context.requests;
         var runningRequestCount = 0;
 
-        var bumpLoadingUp = function () {
+        var bumpLoadingUp = ifNotRemoved(context,function () {
             runningRequestCount++;
             if (runningRequestCount > 0) {
                 context.loadingHandler.call(context, true);
             }
-        }
+        });
 
-        var bumpLoadingDown = function () {
+        var bumpLoadingDown = ifNotRemoved(context,function () {
             runningRequestCount--;
             if (runningRequestCount < 1) {
                 context.loadingHandler.call(context, false);
             }
-        }
+        });
+
+
         context.addRequest = function (config, callback) {
             var configArray = config;
             if (!_.isArray(configArray)) {
@@ -383,8 +405,8 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
                 }
                 bumpLoadingUp();
                 def.always(bumpLoadingDown);
-                return def
-            })
+                return def;
+            });
 
             var requestPromise = $.when.apply(null, defArray);
 
@@ -397,23 +419,20 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
 
         context.loadMeta = function () {
             if (!context.metaDef) {
-                var def = requestConfigs ? context.addRequest(requestConfigs, function () {
-                    var requestsParser = context.getOption('metaParser');
-                    if (requestsParser) {
-                        requestsParser.apply(context, arguments);
-                    }
-                }) : $.when({});
+                var def = requestConfigs ? context.addRequest(requestConfigs, ifNotRemoved(context, function (respArray) {
+                   context.metaCache = respArray
+                })) : $.when({});
                 context.metaDef = def;
             }
             return context.metaDef;
-        }
+        };
 
 
         context.removeReferences(function(){
             requestConfigs=null;
             runningRequestCount=null;
             context = null;
-        })
+        });
 
 
     };
@@ -438,6 +457,14 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
             context=null;
         })
     }
+
+    var ifNotRemoved = function(view,fn){
+        return function(){
+            if(!view.removed){
+                fn.apply(view, arguments);
+            }
+        };
+    };
 
     var setupFunctions = [bindDataEvents, setupMetaRequests, setupTemplateEvents, setupAttributeWatch, setupActionNavigateAnchors, setupRenderEvents, setupStateEvents, setupChildViews];
 
