@@ -9,7 +9,7 @@ define(['require'], function (require) {
         parser: _.identity
     }
 
-    var serviceRoot = 'http://pt.eiris.in/';
+    var serviceRoot = '';
 
     dataLoader.define = function (id, config) {
         var requestConfig = _.extend({}, requestDefaults, config)
