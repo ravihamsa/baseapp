@@ -6,7 +6,8 @@ define(['require'], function (require) {
         type: 'get',
         params: {},
         url: '',
-        parser: _.identity
+        parser: _.identity,
+        cache:'session'
     }
 
     var serviceRoot = '';

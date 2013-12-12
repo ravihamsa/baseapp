@@ -35,7 +35,37 @@ define([
         }
     });
 
-    var CheckboxView = ElementView.extend({
+
+    var InputView = ElementView.extend({
+        events: {
+            'change input': 'updateValue',
+            'blur input': 'resetIfEmpty',
+            'focus input': 'selectIfDefault',
+            'click input': 'clearIfDefault'
+        },
+        selectIfDefault: function () {
+            if (this.model.isElementDefault()) {
+                this.$('input').select();
+            }
+        },
+        clearIfDefault: function () {
+            if (this.model.isElementDefault()) {
+                this.$('input').val('');
+            }
+        },
+        resetIfEmpty: function () {
+            var inputValue = this.$('input').val();
+            if (inputValue === '') {
+                var attr = this.model.toJSON();
+                if(attr.defaultValue){
+                    this.$('input').val(attr.defaultValue);
+                }
+            }
+            this.updateValue();
+        }
+    });
+
+    var CheckboxView = InputView.extend({
         template: checkBoxTemplate,
         valueFunction: function () {
             return this.$('input').is(':checked');
@@ -77,7 +107,7 @@ define([
     });
 
 
-    var RadioListView = ElementView.extend({
+    var RadioListView = InputView.extend({
         template: radioListTemplate,
         valueFunction: function () {
             return this.$('input:checked').val();
@@ -87,7 +117,7 @@ define([
         }
     });
 
-    var CheckListView = ElementView.extend({
+    var CheckListView = InputView.extend({
         template: checkListTemplate,
         valueFunction: function () {
             var selectedOptions = this.$('input:checked');
@@ -130,34 +160,7 @@ define([
     });
 
 
-    var InputView = ElementView.extend({
-        events: {
-            'change input': 'updateValue',
-            'blur input': 'resetIfEmpty',
-            'focus input': 'selectIfDefault',
-            'click input': 'clearIfDefault'
-        },
-        selectIfDefault: function () {
-            if (this.model.isElementDefault()) {
-                this.$('input').select();
-            }
-        },
-        clearIfDefault: function () {
-            if (this.model.isElementDefault()) {
-                this.$('input').val('');
-            }
-        },
-        resetIfEmpty: function () {
-            var inputValue = this.$('input').val();
-            if (inputValue === '') {
-                var attr = this.model.toJSON();
-                if(attr.defaultValue){
-                    this.$('input').val(attr.defaultValue);
-                }
-            }
-            this.updateValue();
-        }
-    });
+
 
     var MessageView = ElementView.extend({
         template:messageViewTemplate,
@@ -182,7 +185,7 @@ define([
         }
     });
 
-    var CheckboxList = ElementView.extend({
+    var CheckboxList = InputView.extend({
         valueFunction: function () {
             return this.$('input').is(':checked');
         },

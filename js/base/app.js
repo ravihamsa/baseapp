@@ -127,7 +127,9 @@ define(['require', 'base/router', 'base/dataLoader', 'base/util', 'base/formatte
                     if (parsedResponse.errors && parsedResponse.errors.length > 0) {
                         def.resolve(parsedResponse.errors);
                     } else {
-                        _this.cacheData(def, hash,config.id);
+                        if(config.cache === 'session'){
+                            _this.cacheData(def, hash,config.id);
+                        }
                         def.resolve(parsedResponse);
                     }
                 })
