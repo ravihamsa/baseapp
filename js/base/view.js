@@ -252,19 +252,21 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
 
         var subViewConfigs = context.getOption('views');
 
-        _.each(subViewConfigs, function (viewConfig, viewName) {
-            viewConfig.parentView = context;
-            views[viewName] = util.createView(viewConfig);
-        });
+
 
         context.getSubView = function (id) {
             var subView = views[id];
             if (subView) {
                 return subView;
             } else {
-                throw new Error('No View Defined for id :' + id);
+                console.log('No View Defined for id :' + id)
+                //throw new Error();
             }
         };
+
+        context.setSubView = function(viewName, view){
+            views[viewName] = view;
+        }
 
         context.getAllSubViews = function(){
             return views;
@@ -287,6 +289,12 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
             views=null;
             context=null;
         })
+
+        _.each(subViewConfigs, function (viewConfig, viewName) {
+            viewConfig.parentView = context;
+            var view  = util.createView(viewConfig);
+            context.setSubView( viewName, view);
+        });
 
     };
 

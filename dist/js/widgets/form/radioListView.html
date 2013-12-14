@@ -3,12 +3,14 @@
         {{elementLabel this}}
     </label>
 
-    <div class="controls">
+    <ul class="controls list-inline">
         {{#each options}}
-        <label class="radio inline">
+        <li>
+        <label class="type-radio inline">
             <input type="radio" name="{{../name}}" value="{{id}}" class="el-{{name}}"/>{{name}}
         </label>
+        </li>
         {{/each}}
-        <span class="help-inline"></span>
-    </div>
+    </ul>
+    <span class="help-inline"></span>
 </div>

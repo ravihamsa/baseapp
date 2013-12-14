@@ -4,9 +4,15 @@ define(['base/app'], function(app) {
         return element.label || element.name;
     });
 
+    var monthArr = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
 
     Handlebars.registerHelper('string', function(str) {
         return app.getString(str);
+    });
+
+    Handlebars.registerHelper('monthName', function(month) {
+        return monthArr[month];
     });
 
     Handlebars.registerHelper('stringify', function(obj) {

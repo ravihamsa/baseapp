@@ -11,14 +11,16 @@ define([
     'base',
     'widgets/form/element',
     'widgets/messageStack',
+    'widgets/calendar',
     'text!./form/checkListView.html',
     'text!./form/checkBoxView.html',
     'text!./form/radioListView.html',
     'text!./form/selectView.html',
     'text!./form/textAreaView.html',
     'text!./form/buttonView.html',
+    'text!./form/dateInputView.html',
     'text!./form/messageView.html'
-], function (app, baseUtil, Base, Element, MessageStack, checkListTemplate, checkBoxTemplate, radioListTemplate, selectViewTemplate, textAreaTemplate, buttonViewTemplate, messageViewTemplate) {
+], function (app, baseUtil, Base, Element, MessageStack, Calendar, checkListTemplate, checkBoxTemplate, radioListTemplate, selectViewTemplate, textAreaTemplate, buttonViewTemplate, dateInputTemplate, messageViewTemplate) {
     'use strict';
 
     var ElementView = Element.View;
@@ -57,11 +59,98 @@ define([
             var inputValue = this.$('input').val();
             if (inputValue === '') {
                 var attr = this.model.toJSON();
-                if(attr.defaultValue){
+                if (attr.defaultValue) {
                     this.$('input').val(attr.defaultValue);
                 }
             }
             this.updateValue();
+        }
+    });
+
+    var DateInputView = InputView.extend({
+        template: dateInputTemplate,
+        events:{
+            'click .dateInput':'showDatePicker',
+            'change .dateInput':'dateChangeHandler'
+        },
+        postRender: function () {
+            this.hideDatePicker();
+        },
+        showDatePicker:function(){
+            var _this = this;
+            var monthView = this.getSubView('monthView');
+            if(!monthView){
+                monthView = baseUtil.createView({
+                    View:Calendar.Month.View,
+                    Model:Calendar.Month.Model,
+                    parentEl:'.monthView',
+                    parentView:this
+                })
+
+                this.setSubView('monthView', monthView);
+
+                this.listenTo(monthView, 'dateClicked', function(date){
+                    _this.hideDatePicker();
+                    _this.$('.dateInput').val(date.format('L'));
+                    _this.updateValue();
+                });
+            }
+
+
+            var value = this.model.get('value');
+            var date = moment(value, 'MM/DD/YYYY');
+            monthView.model.set({
+                year:date.year(),
+                month:date.month(),
+                selectedEpoch:date.valueOf()
+            })
+            var viewEl = this.$el, bodyEl = $('body');
+            var monthViewEl = this.$('.monthView');
+            var clickOutSideEvent = 'click.clickOutSite_'+this.cid;
+            monthViewEl.show();
+            bodyEl.off(clickOutSideEvent);
+            bodyEl.on(clickOutSideEvent,function(e){
+                var target = $(e.target);
+                if(target.parents().index(bodyEl) == -1){
+                    if(!target.is(bodyEl)){
+                        return;
+                    }
+                }
+
+                if(target.parents().index(viewEl) == -1) {
+                    if(monthViewEl.is(":visible")) {
+                        monthViewEl.hide();
+                        $('body').off(clickOutSideEvent);
+                    }
+                }
+            });
+
+        },
+        hideDatePicker:function(){
+            var clickOutSideEvent = 'click.clickOutSite_'+this.cid;
+            this.$('.monthView').hide();
+            $('body').off(clickOutSideEvent);
+        },
+        valueFunction: function () {
+            return this.$('.dateInput').val();
+        },
+        valueChangeHandler: function (value) {
+            var date = moment(value, 'MM/DD/YYYY');
+            if(!date.isValid()){
+                date = moment();
+                this.model.set('value', date.format('L'));
+            };
+            this.$('.dateInput').val(date.format('L'));
+        },
+        dateChangeHandler:function(){
+            var value = this.$('.dateInput').val();
+            var date = moment(value, 'MM/DD/YYYY');
+            if(!date.isValid()){
+                this.valueChangeHandler(this.model.get('value'));
+            }else{
+                this.model.set('value', value);
+                this.hideDatePicker();
+            }
         }
     });
 
@@ -160,14 +249,12 @@ define([
     });
 
 
-
-
     var MessageView = ElementView.extend({
-        template:messageViewTemplate,
-        valueChangeHandler:function(value){
+        template: messageViewTemplate,
+        valueChangeHandler: function (value) {
             this.$('.message').html(value)
         },
-        valueFunction:function(){
+        valueFunction: function () {
             return this.$('.message').html();
         }
     })
@@ -198,6 +285,7 @@ define([
         'select': SelectView,
         'textarea': TextAreaView,
         'checkbox': CheckboxView,
+        'dateInput': DateInputView,
         'radioList': RadioListView,
         'checkList': CheckListView,
         'hidden': HiddenView,
@@ -240,7 +328,7 @@ define([
                         obj[model.id] = model.get('value');
                     }
                 });
-            }else{
+            } else {
                 obj.errors = errors;
             }
             return obj;
@@ -292,9 +380,11 @@ define([
             this.renderMessageStack();
             var model = this.model;
             var elements = model.get('elements');
+            this.$el.hide();
             elements.each(function (elementModel) {
                 this.addElement(elementModel);
             }, this);
+            this.$el.show();
         },
         addElement: function (model) {
             var attr = model.toJSON();

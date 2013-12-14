@@ -2,8 +2,23 @@ define(['require', 'base/router', 'base/dataLoader', 'base/util', 'base/formatte
 
     var hex_md5 = window.hex_md5;
 
+    function checksum(s)
+    {
+        var i;
+        var chk = 0x12345678;
+
+        for (i = 0; i < s.length; i++) {
+            chk += (s.charCodeAt(i) * i);
+        }
+
+        return chk;
+    }
+
+
     var getHash = function (key) {
-        return hex_md5(key.toString());
+        return checksum(key.toString());
+        //return 'hash_'+(hashCounter++);
+
     };
 
     var getTemplateDefByHash = function (hash) {

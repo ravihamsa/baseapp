@@ -3,12 +3,14 @@
         {{elementLabel this}}
     </label>
 
-    <div class="controls">
+    <ul class="controls list-inline">
         {{#each options}}
-        <label class="checkbox inline">
+        <li>
+        <label class="type-checkbox inline">
             <input type="checkbox" name="{{id}}" value="{{id}}" class="el-{{name}}"/>{{name}}
         </label>
+        </li>
         {{/each}}
-        <span class="help-inline"></span>
-    </div>
+    </ul>
+    <span class="help-inline"></span>
 </div>

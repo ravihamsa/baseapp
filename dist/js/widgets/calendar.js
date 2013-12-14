@@ -1,0 +1,1 @@
+define(["require","widgets/calendar/month"],function(e){return{Month:e("widgets/calendar/month")}});
