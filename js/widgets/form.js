@@ -197,12 +197,19 @@ define([
 
 
     var RadioListView = InputView.extend({
+        events: {
+            'change input': 'updateValue'
+        },
         template: radioListTemplate,
         valueFunction: function () {
             return this.$('input:checked').val();
         },
         valueChangeHandler: function (value) {
-            this.$('input[value=' + value + ']').attr('checked', true);
+            if(value === ""){
+                return;
+            }
+            //console.log('valueChangeHandler',value,  this.$('input[value=' + value + ']'));
+            this.$('input[value=' + value + ']').prop('checked', 'checked');
         }
     });
 
@@ -337,9 +344,7 @@ define([
             var elements = this.get('elements');
             var errors = [];
             elements.each(function (model) {
-
                 errors = errors.concat(model.isElementValid());
-
             });
             return errors;
         },
