@@ -94,6 +94,9 @@ define(['require', 'base/router', 'base/dataLoader', 'base/util', 'base/formatte
         getString: function (str) {
             return str;
         },
+        escapeString:function(str){
+            return Handlebars.Utils.escapeExpression(str);
+        },
         parseSuccessResponse: function (resp) {
             return resp;
         },
