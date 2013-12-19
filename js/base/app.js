@@ -7,8 +7,10 @@ define(['require', 'base/router', 'base/dataLoader', 'base/util', 'base/formatte
         var i;
         var chk = 0x12345678;
 
-        for (i = 0; i < s.length; i++) {
-            chk += (s.charCodeAt(i) * i);
+        var start = 1, end = s.length+1; // to tackle 1 length strings
+
+        for (i = start; i < end; i++) {
+            chk += (s.charCodeAt(i-1) * i);
         }
 
         return chk;
@@ -16,6 +18,7 @@ define(['require', 'base/router', 'base/dataLoader', 'base/util', 'base/formatte
 
 
     var getHash = function (key) {
+        //console.log(key, key.toString(), checksum(key.toString()))
         return checksum(key.toString());
         //return 'hash_'+(hashCounter++);
 
