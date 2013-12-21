@@ -331,7 +331,7 @@ define([
             var obj = {};
             if (errors.length === 0) {
                 elements.each(function (model) {
-                    if (model.is('active')) {
+                    if (model.is('active') && model.isNot('skipPost')) {
                         obj[model.id] = model.get('value');
                     }
                 });
