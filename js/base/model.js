@@ -130,6 +130,16 @@ define(function () {
         getOption: function (option) {
             //console.log(option, this.options[option],this[option]);
             return this.options[option] || this[option];
+        },
+        reset:function(newAttributes){
+            //console.log(this.changedAttributes(newAttributes));
+            var currentAttributes = this.toJSON();
+            var missingAttributes = _.omit(currentAttributes, _.keys(newAttributes));
+            //console.log(missingAttributes);
+            _.each(missingAttributes, function(value, key){
+                this.unset(key);
+            }, this)
+            this.set(newAttributes);
         }
     });
 

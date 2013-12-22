@@ -12,7 +12,7 @@ define(['base/view', 'base/app', 'widgets/header'], function(BaseView, baseApp, 
 
         require(['apps/' + appId + '/pages/'+pageId], function(Page){
             var view = new Page.View({
-                model: new Page.Model(params)
+                model: baseApp.appModel
             });
             var el = $(baseApp.appBody);
             el.empty();
@@ -32,9 +32,10 @@ define(['base/view', 'base/app', 'widgets/header'], function(BaseView, baseApp, 
                         renderPage(attr.appId,pageId, attr);
                     });
                 });
-            }else if (changes.pageId) {
-                require(['apps/' + attr.appId + '/app'], function(app) {
-                    renderPage(attr.appId,attr.pageId, attr);
+            }else if (changes.hasOwnProperty('pageId')) {
+                require(['apps/' + attr.appId + '/app'], function(currentApp) {
+                    var pageId = attr.pageId || currentApp.defaultPage;
+                    renderPage(attr.appId,pageId, attr);
                 });
             }
         }

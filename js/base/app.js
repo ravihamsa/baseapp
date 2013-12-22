@@ -1,4 +1,4 @@
-define(['require', 'base/router', 'base/dataLoader', 'base/util', 'base/formatter'], function (require, Router, dataLoader, baseUtil) {
+define(['require', 'base/router', 'base/dataLoader', 'base/util', 'base/formatter', 'base/model'], function (require, Router, dataLoader, baseUtil, _formatter_,  BaseModel) {
 
     var hex_md5 = window.hex_md5;
 
@@ -106,7 +106,7 @@ define(['require', 'base/router', 'base/dataLoader', 'base/util', 'base/formatte
         parseFailureResponse: function (resp) {
             return resp;
         },
-        appModel: new Backbone.Model(),
+        appModel: new BaseModel(),
         getRequestDef: function (config) {
             var _this = this;
 
@@ -212,7 +212,13 @@ define(['require', 'base/router', 'base/dataLoader', 'base/util', 'base/formatte
         navigateToPage:function(appId, pageId, params){
             app.router.navigate(app.getUrl.apply(app, arguments), {trigger:true});
         },
-        getHash: getHash
+        getHash: getHash,
+        getPageAttributes:function(){
+            return this.appModel.toJSON();
+        },
+        getPageAttribute:function(attributeName){
+            return this.appModel.get(attributeName);
+        }
     };
 
 
