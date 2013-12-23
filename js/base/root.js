@@ -12,7 +12,7 @@ define(['base/view', 'base/app', 'widgets/header'], function(BaseView, baseApp, 
 
         require(['apps/' + appId + '/pages/'+pageId], function(Page){
             var view = new Page.View({
-                model: baseApp.appModel
+                model: new Page.Model(params)
             });
             var el = $(baseApp.appBody);
             el.empty();
@@ -25,7 +25,7 @@ define(['base/view', 'base/app', 'widgets/header'], function(BaseView, baseApp, 
     var RootView = BaseView.extend({
         changeHandler: function(changes) {
             var attr = this.model.toJSON();
-            if (changes.appId) {
+            if (changes.hasOwnProperty('appId')) {
                 require(['apps/' + attr.appId], function() {
                     require(['apps/' + attr.appId + '/app'], function(currentApp) {
                         var pageId = attr.pageId || currentApp.defaultPage;
@@ -37,6 +37,8 @@ define(['base/view', 'base/app', 'widgets/header'], function(BaseView, baseApp, 
                     var pageId = attr.pageId || currentApp.defaultPage;
                     renderPage(attr.appId,pageId, attr);
                 });
+            }else if(currentPageView){
+                currentPageView.model.reset(attr);
             }
         }
     });

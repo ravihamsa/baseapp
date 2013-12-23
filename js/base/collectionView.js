@@ -29,6 +29,7 @@ define(['base/view', 'base/itemView', 'base/util'], function(BaseView, BaseItemV
         };
 
         _this.removeItem = function(model) {
+            //console.log(model, model.id);
             var view = _this.getItemViewByModelId(model.id);
             view.remove();
         };
@@ -82,9 +83,12 @@ define(['base/view', 'base/itemView', 'base/util'], function(BaseView, BaseItemV
             var _this = this;
             var prevModels = options.previousModels;
             _.each(prevModels,function(model){
-                _this.getItemViewByModelId(model.id).remove();
+                var view = _this.getItemViewByModelId(model.id);
+                if(view){
+                    view.remove();
+                }
             })
-            collection.each(function(model){
+            collection.batchEach(function(model){
                 _this.addItem(model);
             })
 
