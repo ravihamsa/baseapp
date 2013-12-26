@@ -1,0 +1,14 @@
+<div class="paginator">
+    <div class="summary">
+        {{start}} to {{end}} of {{totalRecords}}
+    </div>
+    {{#if totalRecords}}
+    <div class="buttons">
+        <ul>
+            <li>{{page}}</li>
+            <li><a href="#prevPage" class="action"> < </a> </li>
+            <li><a href="#nextPage" class="action"> > </a> </li>
+        </ul>
+    </div>
+    {{/if}}
+</div>

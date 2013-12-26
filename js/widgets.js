@@ -5,6 +5,7 @@ define(function(require) {
         Calender: require('widgets/calendar'),
         Header: require('widgets/header'),
         MessageStack: require('widgets/messageStack'),
-        Tab: require('widgets/tab')
+        Tab: require('widgets/tab'),
+        Table:require('widgets/table')
     };
 });
