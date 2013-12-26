@@ -100,7 +100,7 @@ define(['require', 'base/router', 'base/dataLoader', 'base/util', 'base/formatte
         escapeString:function(str){
             return Handlebars.Utils.escapeExpression(str);
         },
-        parseSuccessResponse: function (resp) {
+        responseParser: function (resp) {
             return resp;
         },
         parseFailureResponse: function (resp) {
@@ -116,13 +116,13 @@ define(['require', 'base/router', 'base/dataLoader', 'base/util', 'base/formatte
             requestConfig.paramsParser = requestConfig.paramsParser || _.identity;
 
             //default parsers
-            var successParser = _this.parseSuccessResponse, failureParser = _this.parseFailureResponse;
+            var responseParser = this.responseParser;
 
             //console.log(requestConfig);
 
             //if defined consider custom parser
             if (requestConfig.responseParser) {
-                successParser = failureParser = requestConfig.responseParser;
+                responseParser = requestConfig.responseParser;
             }
             
             if(requestConfig.cacheDependencies){
@@ -144,19 +144,20 @@ define(['require', 'base/router', 'base/dataLoader', 'base/util', 'base/formatte
                 var request = dataLoader.getRequest(config.id,config.params);
 
                 request.done(function (resp) {
-                    var parsedResponse = successParser(resp);
-                    if (parsedResponse.errors && parsedResponse.errors.length > 0) {
-                        def.resolve(parsedResponse.errors);
+
+                    if (resp.errors && resp.errors.length > 0) {
+                        def.reject(resp.errors);
                     } else {
                         if(requestConfig.cache === 'session'){
-                            _this.cacheData(def, hash,config.id);
+                            _this.cacheData(def, hash, config.id);
                         }
+                        var parsedResponse = responseParser(resp);
                         def.resolve(parsedResponse);
                     }
                 })
 
                 request.fail(function (resp) {
-                    def.resolve({errors:[{errorCode:'network issue', message:'Network failure try again later'}]});
+                    def.reject({errors:[{errorCode:'network issue', message:'Network failure try again later'}]});
                 });
 
             }

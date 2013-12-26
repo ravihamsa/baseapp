@@ -110,6 +110,7 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
             this.removeChildViews();
             Backbone.View.prototype.remove.call(this);
             this.removeReferences();
+            this.stopListening();
             this.removeQue = null;
             this.removed = true;
         },

@@ -4,8 +4,8 @@ define(['base/view', 'base/app', 'widgets/header'], function(BaseView, baseApp, 
 
 
     var renderPage = function(appId, pageId, params){
+        console.log('renderPage', appId, pageId);
         if(currentPageView){
-
             console.log('currentPageView removed ', new Date().toLocaleTimeString());
             currentPageView.remove();
         }
@@ -25,6 +25,7 @@ define(['base/view', 'base/app', 'widgets/header'], function(BaseView, baseApp, 
     var RootView = BaseView.extend({
         changeHandler: function(changes) {
             var attr = this.model.toJSON();
+            console.log(changes);
             if (changes.hasOwnProperty('appId')) {
                 require(['apps/' + attr.appId], function() {
                     require(['apps/' + attr.appId + '/app'], function(currentApp) {

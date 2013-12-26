@@ -16,6 +16,8 @@ define(['base/app', 'base/model'], function (baseApp, BaseModel) {
             var index1 = this.get(model1Id).index();
             var index2 = this.get(model2Id).index();
 
+            //console.log(model1Id, model2Id, index1, index2, position);
+
             var delta;
             if (index1 < index2) {
                 delta = position === 'after' ? 0 : -1;
