@@ -5,9 +5,10 @@ define([
     'base/configurableModel',
     'base/collection',
     'base/util',
-    'widgets/table/rowCollection'
+    'widgets/table/rowCollection',
+    'widgets/table/pagination'
 ],
-    function (baseApp, BaseView, BaseModel, ConfigurableModel, BaseCollection, baseUtil, RowCollection) {
+    function (baseApp, BaseView, BaseModel, ConfigurableModel, BaseCollection, baseUtil, RowCollection, Pagination) {
         'use strict';
 
         var TableModel = BaseModel.extend({
@@ -18,18 +19,17 @@ define([
         var RowView = BaseView.extend({
             tagName: 'tr',
             className: 'table-row',
-            template: '{{#each items}}<td data-key="{{key}}" class="{{classNames}}"><div class="cell-value" style="text-align: {{align}}">{{#if renderHTML}}{{{value}}}{{else}}{{value}}{{/if}}</div></td>{{/each}}',
+            template: '{{#each items}}<td data-key="{{key}}" class="{{classNames}}" style="width:{{width}}"><div class="cell-value" style="text-align: {{align}};">{{#if renderHTML}}{{{value}}}{{else}}{{value}}{{/if}}</div></td>{{/each}}',
             useDeepJSON: true
         })
 
         var HeaderView = RowView.extend({
             className: 'table-heading',
-            template: '{{#each items}}<th data-key="{{key}}" class="{{classNames}}"><div class="cell-value" style="text-align: {{align}}">{{value}}</div></th>{{/each}}'
+            template: '{{#each items}}<th data-key="{{key}}" class="{{classNames}}"  style="width:{{width}}"><div class="cell-value" style="text-align: {{align}}">{{value}}</div></th>{{/each}}'
         })
 
         var setupRowRender = function () {
             var _this = this; 
-
             var viewIndex = {};
             var el = this.$el;
             var coll = this.getOption('rowCollection');
@@ -38,7 +38,6 @@ define([
 
 
             _this.addItem = function (model, index, containerEl) {
-
                 var sortOrder = coll.getConfig('sortOrder');
                 var sortKey = coll.getConfig('sortKey');
 
@@ -46,7 +45,8 @@ define([
                     var classList = ['cell'];
                     if (sortKey === item.key) {
                         classList.push('sorted');
-                        classList.push(sortOrder);
+                        classList.push('order-'+sortOrder);
+
                     }
 
                     if (index % 2 === 0) {
@@ -60,6 +60,7 @@ define([
                         classNames: classList.join(' '),
                         value: baseApp.getFormatted(dataObj[item.key], item.formatter, dataObj),
                         align: item.align || 'left',
+                        width: item.width ? item.width+'px' : 'auto',
                         renderHTML: item.renderHTML
                     }
 
@@ -71,11 +72,49 @@ define([
 
 
                 var view = baseUtil.createView({model: rowModel, View: RowView, parentView: _this});
-                viewIndex[model.id] = view;
+                viewIndex[view.cid] = view;
                 //console.log(view.$el.html());
                 view.$el.appendTo(containerEl);
 
             };
+
+            _this.addHeaderItem = function(containerEl){
+                var sortOrder = coll.getConfig('sortOrder');
+                var sortKey = coll.getConfig('sortKey');
+
+                var columnsArray = _.map(columns, function (item) {
+                    var classList = ['header-cell'];
+                    if(item.sortable !== false){
+                        classList.push('sortable');
+                    }
+
+                    if (sortKey === item.key) {
+                        classList.push('sorted');
+                        classList.push('order-'+sortOrder);
+                    }
+
+                    return {
+                        key: item.key,
+                        classNames: classList.join(' '),
+                        value: item.label || baseApp.beautifyId(item.key),
+                        align: item.align || 'left',
+                        width: item.width ? item.width+'px' : 'auto'
+                    }
+                })
+
+                var headerModel = new BaseModel({
+                    items: new BaseCollection(columnsArray)
+                })
+
+                var headerView = baseUtil.createView({
+                    View: HeaderView,
+                    model: headerModel,
+                    parentEl: containerEl,
+                    parentView: _this
+                })
+
+                viewIndex[headerView.cid] = headerView;
+            }
 
             _this.removeItem = function (model) {
                 var view = _this.getModelViewAt(model.id);
@@ -84,6 +123,7 @@ define([
 
             _this.removeAllRows = function(){
                 _.each(viewIndex, function(view, modelId){
+                    //console.log(view.el, modelId);
                     view.remove();
                 });
             }
@@ -107,7 +147,7 @@ define([
             template: '<div class="table-header"></div> <table class="row-list"></table><div class="table-footer"></div>',
             className: 'data-table',
             events:{
-                'click th.header-cell':'toggleSort'
+                'click th.sortable':'toggleSort'
             },
             constructor: function (options) {
                 var _this = this;
@@ -119,16 +159,16 @@ define([
                 _this.listenTo(rowCollection, 'config_change', _this.loadRows);
 
                 _this.listenTo(rowCollection, 'reset', function () {
-                    _this.removeAllRows();
-                    _this.renderRows();
+                   _this.redrawTable();
                 })
             },
+            redrawTable:function(){
+                this.removeAllRows();
+                this.renderHeader();
+                this.renderRows();
+            },
             postRender: function () {
-                var _this = this;
-                var rowList = this.$('.row-list');
-                _this.renderHeader(rowList);
-                _this.loadRows();
-
+                this.loadRows();
             },
             loadRows:function(){
                 var _this = this;
@@ -150,10 +190,9 @@ define([
                         coll.reset(resp.results);
                     })
                 } else if (coll.url) {
-
                     coll.fetch({processData: true,reset: true});
                 } else {
-                    _this.renderRows();
+                    _this.redrawTable();
                 }
                 el.show();
             },
@@ -162,7 +201,6 @@ define([
                 var coll = _this.getOption('rowCollection');
                 var arrayOfRecords = coll.getProcessedRecords();
                 var rowList = this.$('.row-list');
-                _this.$('.table-row').remove();
 
                 if(arrayOfRecords.length === 0){
                     _this.renderNoData();
@@ -185,43 +223,15 @@ define([
                 });
                 
             },
-            renderHeader: function (rowList) {
+            renderHeader: function () {
                 var _this = this;
-                var coll = this.getOption('rowCollection');
-                var columns = this.getOption('columns');
-                var sortOrder = coll.getOption('sortOrder');
-                var sortKey = coll.getOption('sortKey');
+                var rowList = this.$('.row-list');
+                _this.addHeaderItem(rowList)
 
-                var columnsArray = _.map(columns, function (item) {
-                    var classList = ['header-cell'];
-                    if (sortKey === item.key) {
-                        classList.push('sorted');
-                        classList.push(sortOrder);
-                    }
-
-                    return {
-                        key: item.key,
-                        classNames: classList.join(' '),
-                        value: item.label || baseApp.beautifyId(item.key),
-                        align: item.align || 'left'
-                    }
-                })
-
-
-                var headerModel = new BaseModel({
-                    items: new BaseCollection(columnsArray)
-                })
-
-                baseUtil.createView({
-                    View: HeaderView,
-                    model: headerModel,
-                    parentEl: rowList,
-                    parentView: _this
-                })
             },
             loadingHandler:function(isLoading){
                 BaseView.prototype.loadingHandler.call(this, isLoading);
-                console.log(this.el);
+                //console.log(this.el);
             },
             toggleSort:function(e){
                 var target = $(e.currentTarget);

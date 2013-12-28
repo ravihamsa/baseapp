@@ -125,7 +125,9 @@ define(['base/app', 'base/util' , 'base/model', 'base/collection'], function (ba
     };
 
     var configureMixin = function (context) {
-        var config = new BaseModel();
+        var config = new BaseModel({
+            sortOrder:'asc'
+        });
 
         var methods = {
             setConfig: function (key, value) {

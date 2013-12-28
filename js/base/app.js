@@ -228,6 +228,11 @@ define(['require', 'base/router', 'base/dataLoader', 'base/util', 'base/formatte
     };
 
 
+    $('body').on('click', '.dummy', function(e){
+        e.preventDefault()
+        console.warn('dummy click prevented');
+    })
+
     return app;
 
 

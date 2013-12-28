@@ -44,6 +44,10 @@ text!widgets/form/dateInputView.html
 text!widgets/form/messageView.html
 js/widgets/form.js
 js/widgets/tab.js
+js/widgets/table/rowCollection.js
+text!widgets/table/pagination.html
+js/widgets/table/pagination.js
+js/widgets/table.js
 js/widgets.js
 
 js/base-list.js
@@ -107,6 +111,10 @@ text!widgets/form/messageView.html
 js/widgets/form.js
 js/list/singleSelect.js
 js/widgets/tab.js
+js/widgets/table/rowCollection.js
+text!widgets/table/pagination.html
+js/widgets/table/pagination.js
+js/widgets/table.js
 js/base-list-widgets.js
 js/list/multiSelect.js
 js/list.js
