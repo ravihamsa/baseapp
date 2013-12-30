@@ -42,7 +42,10 @@ define(['require', 'base/router', 'base/dataLoader', 'base/util', 'base/formatte
     };
 
 
-    var templateIndex = {}, dataIndex = {};
+    var templateIndex = {}, dataIndex = {}, stringIndex={
+        'error.name.req':'Name is Required',
+        'error.displayText.req':'Display Text is Required'
+    };
 
     var app = {
         root: '/',
@@ -95,7 +98,7 @@ define(['require', 'base/router', 'base/dataLoader', 'base/util', 'base/formatte
             console.log.apply(console, arguments);
         },
         getString: function (str) {
-            return str;
+            return stringIndex[str] || str;
         },
         escapeString:function(str){
             return Handlebars.Utils.escapeExpression(str);
@@ -219,6 +222,9 @@ define(['require', 'base/router', 'base/dataLoader', 'base/util', 'base/formatte
         },
         getPageAttribute:function(attributeName){
             return this.appModel.get(attributeName);
+        },
+        updateStringIndex:function(map){
+            _.extend(stringIndex, map);
         }
     };
 
