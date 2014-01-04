@@ -15,17 +15,166 @@ define([
 
         })
 
+        var ValueView = BaseView.extend({
+            constructor:function(){
+                var _this = this;
+                BaseView.apply(_this, arguments);
+                var rowModel = _this.getOption('rowModel');
+                if(!rowModel){
+                    return;
+                }
+                var key =  _this.model.get('key');
+                _this.listenTo(rowModel, 'change:'+key, function(model, value){
+                    _this.model.set('value', value);
+                })
+            
+            },
+            tagName: 'td',
+            template: '<div class="cell-value" style="text-align: {{align}};">{{#if renderHTML}}{{{value}}}{{else}}{{value}}{{/if}}</div>',
+            attributes: function  () {
+                var obj = this.model.toJSON();
+                return {
+                    class:obj.classNames,
+                    style:'width:'+obj.width,
+                    'data-key':obj.key
+                }
+            },
+            valueChangeHandler:function(){
+                this.render();
+            },
+            valueFunction:function(){
+                return _this.model.get('value')
+            }
+        })
+
+
+
+        var HeaderCellView = ValueView.extend({
+            tagName:'th',
+            template: '<div class="cell-value" style="text-align: {{align}};">{{#if renderHTML}}{{{label}}}{{else}}{{label}}{{/if}}</div>',
+        });
+
+        var CheckboxHeaderView = HeaderCellView.extend({
+            constructor:function(){
+                var _this = this;
+                BaseView.apply(_this, arguments);
+                var rowCollection = _this.getOption('rowCollection');
+                var key =  _this.model.get('key');
+
+
+                var changeHanlder = function(){
+                    var processedRecords = rowCollection.getProcessedRecords();
+                    var selectedRecords = _.filter(processedRecords, function(model){
+                        return model.get(key) === true;
+                    })
+                    //console.log(selectedRecords.length , processedRecords.length)
+                    if(selectedRecords.length ===  processedRecords.length){
+                        _this.model.set('value', true)
+                    }else{
+                        _this.model.set('value', false)
+                    }
+                }
+
+                _this.listenTo(rowCollection, 'change:'+key, changeHanlder)
+                changeHanlder();
+                
+            },
+            template: '<label class="cell-value" style="text-align: {{align}}; display:block;"> <input type="checkbox" /></label>',
+            events:{
+                'change input':'updateRowCollection'
+            },
+            updateRowCollection:function  () {
+                var key = this.model.get('key');
+                var rowCollection = this.getOption('rowCollection');
+                var processedRecords = rowCollection.getProcessedRecords();                
+                var value = this.valueFunction();
+                _.each(processedRecords,function  (model) {
+                    model.set(key,value);
+                })
+            },
+            valueFunction:function  () {
+                return this.$('input').is(':checked');
+            },
+            valueChangeHandler:function(value) {
+                //console.log('---',value, '----');
+                this.$('input').prop('checked', value);
+            }
+        })
+
+        var CheckboxView = ValueView.extend({
+            template: '<label class="cell-value" style="text-align: {{align}}; display:block;"> <input type="checkbox" /></label>',
+            events:{
+                'change input':'updateRowModel'
+            },
+            updateRowModel:function  () {
+                var rowModel = this.getOption('rowModel');
+                var key = this.model.get('key');
+                rowModel.set(key, this.valueFunction());
+            },
+            valueFunction:function  () {
+                return this.$('input').is(':checked');
+            },
+            valueChangeHandler:function(value) {
+                this.$('input').prop('checked', value);
+            }
+        })
+
+        var cellTypeIndex = {
+            'checkbox':CheckboxView
+        }
+
+        var headerCellTypeIndex = {
+            'checkbox':CheckboxHeaderView
+        }
 
         var RowView = BaseView.extend({
             tagName: 'tr',
             className: 'table-row',
-            template: '{{#each items}}<td data-key="{{key}}" class="{{classNames}}" style="width:{{width}}"><div class="cell-value" style="text-align: {{align}};">{{#if renderHTML}}{{{value}}}{{else}}{{value}}{{/if}}</div></td>{{/each}}',
+            postRender:function  () {
+                var _this = this;
+                var dataObj = this.model.toJSON(true);
+                var items = dataObj.items;
+                var rowModel =  this.getOption('rowModel');
+                
+                _.each(items,function  (item) {
+                    
+                    var CellView = cellTypeIndex[item.type] || ValueView;
+                    var cellView = baseUtil.createView({
+                        View:CellView,
+                        Model:BaseModel,
+                        modelAttributes:item,
+                        rowModel:rowModel,
+                        parentView:_this
+                    })
+                    cellView.$el.appendTo(_this.$el);
+                })
+                
+            },
             useDeepJSON: true
         })
 
         var HeaderView = RowView.extend({
             className: 'table-heading',
-            template: '{{#each items}}<th data-key="{{key}}" class="{{classNames}}"  style="width:{{width}}"><div class="cell-value" style="text-align: {{align}}">{{value}}</div></th>{{/each}}'
+            postRender:function  () {
+                var _this = this;
+                var dataObj = this.model.toJSON(true);
+                var items = dataObj.items;
+                var rowCollection =  this.getOption('rowCollection');
+                
+                _.each(items,function  (item) {
+                    //console.log(item.type);
+                    var CellView = headerCellTypeIndex[item.type] || HeaderCellView;
+                    var cellView = baseUtil.createView({
+                        View:CellView,
+                        Model:BaseModel,
+                        modelAttributes:item,
+                        rowCollection:rowCollection,
+                        parentView:_this
+                    })
+                    cellView.$el.appendTo(_this.$el);
+                })
+                
+            }
         })
 
         var setupRowRender = function () {
@@ -57,6 +206,7 @@ define([
 
                     return {
                         key: item.key,
+                        type:item.type || 'value',
                         classNames: classList.join(' '),
                         value: baseApp.getFormatted(dataObj[item.key], item.formatter, dataObj),
                         align: item.align || 'left',
@@ -71,7 +221,7 @@ define([
                 })
 
 
-                var view = baseUtil.createView({model: rowModel, View: RowView, parentView: _this});
+                var view = baseUtil.createView({model: rowModel, View: RowView, parentView: _this, rowModel:model});
                 viewIndex[view.cid] = view;
                 //console.log(view.$el.html());
                 view.$el.appendTo(containerEl);
@@ -95,8 +245,9 @@ define([
 
                     return {
                         key: item.key,
+                        type:item.type || 'value',
                         classNames: classList.join(' '),
-                        value: item.label || baseApp.beautifyId(item.key),
+                        label: item.label || baseApp.beautifyId(item.key),
                         align: item.align || 'left',
                         width: item.width ? item.width+'px' : 'auto'
                     }
@@ -110,9 +261,10 @@ define([
                     View: HeaderView,
                     model: headerModel,
                     parentEl: containerEl,
-                    parentView: _this
+                    parentView: _this,
+                    rowCollection:coll
                 })
-
+                //console.log(coll);
                 viewIndex[headerView.cid] = headerView;
             }
 

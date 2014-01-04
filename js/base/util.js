@@ -86,7 +86,7 @@ define(function() {
 
             if (viewType === 'model') {
                 if (config.Model) {
-                    config.model = new config.Model(config.attributes);
+                    config.model = new config.Model(config.modelAttributes);
                 }
             } else {
                 if (config.Collection) {

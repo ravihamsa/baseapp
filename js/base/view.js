@@ -63,6 +63,7 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
                         console.warn(this.$el[0], diffTime);
                     }
                     _this.rendered = true;
+                    _this.trigger('rendered');
                 }));
 
             };
@@ -289,6 +290,7 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
             subViewConfigs=null;
             views=null;
             context=null;
+
         })
 
         _.each(subViewConfigs, function (viewConfig, viewName) {
@@ -305,7 +307,9 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
         var model = context.model;
         if (model) {
             context.listenTo(model,'change', _.bind(watchAttributes, context));
-            syncAttributes.call(context, model);
+            context.listenToOnce(context, 'rendered', function  () {
+                syncAttributes.call(context, model);
+            })
         }
 
     };
@@ -330,13 +334,13 @@ define(['base/app', 'base/model', 'base/util'], function (app, BaseModel, util) 
         _.each(changes, function (value, attribute) {
             var handler = this[attribute + 'ChangeHandler'];
             if (handler && typeof handler === 'function') {
-                handler.call(this, value);
+                handler.call(this, value, true);
             }
         }, this);
 
         var changeHandler = this.changeHandler;
         if (changeHandler && typeof changeHandler === 'function') {
-            changeHandler.call(this, changes);
+            changeHandler.call(this, changes, true);
         }
     };
 
