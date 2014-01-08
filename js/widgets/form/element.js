@@ -134,7 +134,6 @@ define(['base/app', 'base', 'widgets/form/validator', 'text!./inputView.html'], 
         valueChangeHandler: function(value) {
             this.$('input').val(value);
             this.model.updateActive();
-           // console.log(value, 'txt');
         },
         errorCodeChangeHandler: function(errorCode) {
             var el = this.$(DOT_HELP_INLINE);
