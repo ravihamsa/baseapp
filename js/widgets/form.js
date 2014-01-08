@@ -407,21 +407,20 @@ define([
                     model: model,
                     el: viewEl
                 });
+                view.trigger('rendered');
                 view.postRender();
-                view.syncAttributes();
             } else {
-
                 view = baseUtil.createView({
                     View: ElementView,
                     model: model,
                     parentView: thisView
-                })
+                });
 
                 var group = attr.group;
-                this.$('.' + groupPrefix + group).append(view.render().el);
+                this.$('.' + groupPrefix + group).append(view.el);
             }
         },
-        removeElement: function (model) {
+        removeElement: function () {
 
         },
         renderGroupContainers: function () {

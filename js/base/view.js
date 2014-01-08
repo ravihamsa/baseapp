@@ -38,6 +38,10 @@ define(['base/app', 'base/model', 'base/util'], function(app, BaseModel, util) {
         render: function() {
             var _this = this;
             _this.$el.addClass('rendering');
+            if (!_this.model) {
+                _this.model = new BaseModel();
+            }
+
             var time = new Date().getTime();
             _this.beforeRender();
 
@@ -46,12 +50,7 @@ define(['base/app', 'base/model', 'base/util'], function(app, BaseModel, util) {
                 if (_this.removeChildViews) {
                     _this.removeChildViews();
                 }
-
-
                 app.getTemplateDef(_this.getTemplate()).done(ifNotRemoved(_this, function(templateFunction) {
-                    if (!_this.model) {
-                        _this.model = new BaseModel();
-                    }
                     _this.renderTemplate(templateFunction);
                     setupSubViews(_this);
                     if (_this.setState) {
