@@ -311,9 +311,9 @@ define(['base/app', 'base/model', 'base/util'], function(app, BaseModel, util) {
 
         var model = context.model;
         if (model) {
-            context.listenTo(model, 'change', _.bind(watchAttributes, context));
             context.listenToOnce(context, 'rendered', function() {
                 syncAttributes.call(context, model);
+                context.listenTo(model, 'change', _.bind(watchAttributes, context));
             });
         }
 

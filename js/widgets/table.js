@@ -1,13 +1,13 @@
 define([
-    'base/app',
-    'base/view',
-    'base/model',
-    'base/configurableModel',
-    'base/collection',
-    'base/util',
-    'widgets/table/rowCollection',
-    'widgets/table/pagination'
-],
+        'base/app',
+        'base/view',
+        'base/model',
+        'base/configurableModel',
+        'base/collection',
+        'base/util',
+        'widgets/table/rowCollection',
+        'widgets/table/pagination'
+    ],
     function(baseApp, BaseView, BaseModel, ConfigurableModel, BaseCollection, baseUtil, RowCollection, Pagination) {
         'use strict';
 
@@ -67,12 +67,24 @@ define([
                     var selectedRecords = _.filter(processedRecords, function(model) {
                         return model.get(key) === true;
                     });
-                    //console.log(selectedRecords.length , processedRecords.length)
-                    if (selectedRecords.length === processedRecords.length) {
-                        _this.model.set('value', true);
-                    }else {
+
+                    //console.log(selectedRecords.length, processedRecords.length);
+
+                    if (processedRecords.length === 0) {
                         _this.model.set('value', false);
+                        _this.model.set('disabled', true);
+                        //_this.$('input').prop('disabled', true);
+                    } else {
+
+                        if (selectedRecords.length === processedRecords.length) {
+                            _this.model.set('value', true);
+                        } else {
+                            _this.model.set('value', false);
+                        }
+                        _this.model.set('disabled', false);
+                        //_this.$('input').prop('disabled', false);
                     }
+
                 };
 
                 _this.listenTo(rowCollection, 'change:' + key, changeHanlder);
@@ -98,6 +110,10 @@ define([
             valueChangeHandler: function(value) {
                 //console.log('---',value, '----');
                 this.$('input').prop('checked', value);
+            },
+            disabledChangeHandler: function(value) {
+                //console.log(value, this.$('input'));
+                this.$('input').prop('disabled', value);
             }
         });
 
@@ -116,6 +132,10 @@ define([
             },
             valueChangeHandler: function(value) {
                 this.$('input').prop('checked', value);
+            },
+            disabledChangeHandler: function(value) {
+                console.log(value, this.$('input'));
+                this.$('input').prop('disabled', value);
             }
         });
 
@@ -177,14 +197,18 @@ define([
             }
         });
 
+        var NoDataView = BaseView.extend({
+            tagName:'tr',
+            className:'table-row no-data-row',
+            template: '<td colspan="{{colspan}}">{{value}}</td>'
+        });
+
         var setupRowRender = function() {
-            var _this = this; ;
+            var _this = this;
             var viewIndex = {};
             var el = this.$el;
             var coll = this.getOption('rowCollection');
             var columns = this.getOption('columns');
-
-
 
             _this.addItem = function(model, index, containerEl) {
                 var sortOrder = coll.getConfig('sortOrder');
@@ -221,7 +245,12 @@ define([
                 });
 
 
-                var view = baseUtil.createView({model: rowModel, View: RowView, parentView: _this, rowModel: model});
+                var view = baseUtil.createView({
+                    model: rowModel,
+                    View: RowView,
+                    parentView: _this,
+                    rowModel: model
+                });
                 viewIndex[view.cid] = view;
                 //console.log(view.$el.html());
                 view.$el.appendTo(containerEl);
@@ -268,14 +297,28 @@ define([
                 viewIndex[headerView.cid] = headerView;
             };
 
+            _this.renderNoData = function() {
+                var noDataView = baseUtil.createView({
+                    View: NoDataView,
+                    parentEl: '.row-list',
+                    parentView: _this,
+                    model: new BaseModel({
+                        colspan:columns.length,
+                        value:_this.getOption('noDataTemplate') || 'No Records'
+                    })
+                });
+                viewIndex[noDataView.cid] = noDataView;
+
+            };
+
             _this.removeItem = function(model) {
                 var view = _this.getModelViewAt(model.id);
                 view.remove();
             };
 
             _this.removeAllRows = function() {
-                _.each(viewIndex, function(view, modelId) {
-                    //console.log(view.el, modelId);
+                _.each(viewIndex, function(view) {
+                    console.log(view.el, view.cid);
                     view.remove();
                 });
             };
@@ -295,6 +338,7 @@ define([
         };
 
 
+
         var View = BaseView.extend({
             template: '<div class="table-header"></div> <table class="row-list"></table><div class="table-footer"></div>',
             className: 'data-table',
@@ -311,7 +355,7 @@ define([
                 _this.listenTo(rowCollection, 'config_change', _this.loadRows);
 
                 _this.listenTo(rowCollection, 'reset', function() {
-                   _this.redrawTable();
+                    _this.redrawTable();
                 });
             },
             redrawTable: function() {
@@ -342,7 +386,10 @@ define([
                         coll.reset(resp.results);
                     });
                 } else if (coll.url) {
-                    coll.fetch({processData: true, reset: true});
+                    coll.fetch({
+                        processData: true,
+                        reset: true
+                    });
                 } else {
                     _this.redrawTable();
                 }
@@ -356,24 +403,22 @@ define([
 
                 if (arrayOfRecords.length === 0) {
                     _this.renderNoData();
-                }else {
+
+                } else {
                     _.each(arrayOfRecords, function(model, index) {
                         _this.addItem(model, index, rowList);
                     });
                 }
             },
+            /*
             renderNoData: function() {
                 var noDataTemplate = this.getOption('noDataTemplate') || 'No Records';
                 var rowList = this.$('.row-list');
                 var columns = this.getOption('columns');
-                baseApp.getTemplateDef(noDataTemplate).done(function(templateFunction) {
-                    var td = $('<td></td>').prop('colspan', columns.length);
-                    td.html(templateFunction({}));
-                    var tr = $('<tr class="table-row no-data-row"></tr>').appendTo(rowList);
-                    td.appendTo(tr);
-                });
+                
 
             },
+            */
             renderHeader: function() {
                 var _this = this;
                 var rowList = this.$('.row-list');
@@ -385,6 +430,10 @@ define([
                 //console.log(this.el);
             },
             toggleSort: function(e) {
+                if(this.$('.no-data-row').length > 0){
+                    e.preventDefault();
+                    return;
+                }
                 var target = $(e.currentTarget);
                 var colName = target.data('key');
                 this.getOption('rowCollection').setSortKey(colName);
