@@ -77,7 +77,7 @@ define(function() {
                 }
             }
 
-            var filteredConfig = _.omit(config, 'Collection', 'Model', 'parentEl', 'skipRender', 'parentView');
+            var filteredConfig = _.omit(config, 'Collection', 'Model', 'parentEl', 'skipRender', 'parentView', 'View');
             view = new config.View(filteredConfig);
             deployView(view, config);
             return view;
