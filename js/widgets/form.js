@@ -188,7 +188,6 @@ define([
         },
         valueChangeHandler: function (value) {
             this.$('select').val(value);
-            console.log(value, this.model.id, this.$('select').val(), arguments);
         },
         disabledChangeHandler: function (value) {
             this.$el.toggleClass('disabled', value);
