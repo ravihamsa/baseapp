@@ -20,7 +20,7 @@ define([
     'text!./form/buttonView.html',
     'text!./form/dateInputView.html',
     'text!./form/messageView.html'
-], function (app, baseUtil, Base, Element, MessageStack, Calendar, checkListTemplate, checkBoxTemplate, radioListTemplate, selectViewTemplate, textAreaTemplate, buttonViewTemplate, dateInputTemplate, messageViewTemplate) {
+], function(app, baseUtil, Base, Element, MessageStack, Calendar, checkListTemplate, checkBoxTemplate, radioListTemplate, selectViewTemplate, textAreaTemplate, buttonViewTemplate, dateInputTemplate, messageViewTemplate) {
     'use strict';
 
     var ElementView = Element.View;
@@ -29,10 +29,10 @@ define([
 
     var ButtonView = ElementView.extend({
         template: buttonViewTemplate,
-        valueFunction: function () {
+        valueFunction: function() {
             return;
         },
-        valueChangeHandler: function (value) {
+        valueChangeHandler: function(value) {
             return;
         }
     });
@@ -45,17 +45,17 @@ define([
             'focus input': 'selectIfDefault',
             'click input': 'clearIfDefault'
         },
-        selectIfDefault: function () {
+        selectIfDefault: function() {
             if (this.model.isElementDefault()) {
                 this.$('input').select();
             }
         },
-        clearIfDefault: function () {
+        clearIfDefault: function() {
             if (this.model.isElementDefault()) {
                 this.$('input').val('');
             }
         },
-        resetIfEmpty: function () {
+        resetIfEmpty: function() {
             var inputValue = this.$('input').val();
             if (inputValue === '') {
                 var attr = this.model.toJSON();
@@ -69,85 +69,77 @@ define([
 
     var DateInputView = InputView.extend({
         template: dateInputTemplate,
-        events:{
-            'click .dateInput':'showDatePicker',
-            'change .dateInput':'dateChangeHandler'
+        events: {
+            'click .dateInput': 'showDatePicker',
+            'change .dateInput': 'dateChangeHandler'
         },
-        postRender: function () {
-            this.hideDatePicker();
-        },
-        showDatePicker:function(){
+        postRender: function() {
             var _this = this;
+            _this.hideDatePicker();
             var monthView = this.getSubView('monthView');
-            if(!monthView){
-                monthView = baseUtil.createView({
-                    View:Calendar.Month.View,
-                    Model:Calendar.Month.Model,
-                    parentEl:'.monthView',
-                    parentView:this
-                })
+            this.listenTo(monthView, 'dateClicked', function(date) {
+                _this.hideDatePicker();
+                _this.$('.dateInput').val(date.format('L'));
+                _this.updateValue();
+            });
 
-                this.setSubView('monthView', monthView);
+            var monthViewEl = monthView.$el;
 
-                this.listenTo(monthView, 'dateClicked', function(date){
-                    _this.hideDatePicker();
-                    _this.$('.dateInput').val(date.format('L'));
-                    _this.updateValue();
-                });
-            }
-
-
-            var value = this.model.get('value');
-            var date = moment(value, 'MM/DD/YYYY');
-            monthView.model.set({
-                year:date.year(),
-                month:date.month(),
-                selectedEpoch:date.valueOf()
-            })
-            var viewEl = this.$el, bodyEl = $('body');
-            var monthViewEl = this.$('.monthView');
-            var clickOutSideEvent = 'click.clickOutSite_'+this.cid;
-            monthViewEl.show();
-            bodyEl.off(clickOutSideEvent);
-            bodyEl.on(clickOutSideEvent,function(e){
+            this.listenTo(app,'bodyClicked',function  (e) {
                 var target = $(e.target);
-                if(target.parents().index(bodyEl) == -1){
-                    if(!target.is(bodyEl)){
+                if (target.parents().index(bodyEl) == -1) {
+                    if (!target.is(bodyEl)) {
                         return;
                     }
                 }
 
-                if(target.parents().index(viewEl) == -1) {
-                    if(monthViewEl.is(":visible")) {
+                if (target.parents().index(viewEl) == -1) {
+                    if (monthViewEl.is(":visible")) {
                         monthViewEl.hide();
-                        $('body').off(clickOutSideEvent);
                     }
                 }
             });
+        },
+        views: {
+            monthView: {
+                View: Calendar.Month.View,
+                Model: Calendar.Month.Model,
+                parentEl: '.monthView'
+            }
+        },
+        showDatePicker: function() {
+            var monthView = this.getSubView('monthView');
+            var value = this.model.get('value');
+            var date = moment(value, 'MM/DD/YYYY');
+            monthView.model.set({
+                year: date.year(),
+                month: date.month(),
+                selectedEpoch: date.valueOf()
+            });
+            monthView.show();
 
         },
-        hideDatePicker:function(){
-            var clickOutSideEvent = 'click.clickOutSite_'+this.cid;
-            this.$('.monthView').hide();
-            $('body').off(clickOutSideEvent);
+        hideDatePicker: function() {
+            var monthView = this.getSubView('monthView');
+            monthView.hide();
         },
-        valueFunction: function () {
+        valueFunction: function() {
             return this.$('.dateInput').val();
         },
-        valueChangeHandler: function (value) {
+        valueChangeHandler: function(value) {
             var date = moment(value, 'MM/DD/YYYY');
-            if(!date.isValid()){
+            if (!date.isValid()) {
                 date = moment();
                 this.model.set('value', date.format('L'));
             };
             this.$('.dateInput').val(date.format('L'));
         },
-        dateChangeHandler:function(){
+        dateChangeHandler: function() {
             var value = this.$('.dateInput').val();
             var date = moment(value, 'MM/DD/YYYY');
-            if(!date.isValid()){
+            if (!date.isValid()) {
                 this.valueChangeHandler(this.model.get('value'));
-            }else{
+            } else {
                 this.model.set('value', value);
                 this.hideDatePicker();
             }
@@ -156,10 +148,10 @@ define([
 
     var CheckboxView = InputView.extend({
         template: checkBoxTemplate,
-        valueFunction: function () {
+        valueFunction: function() {
             return this.$('input').is(':checked');
         },
-        valueChangeHandler: function (value) {
+        valueChangeHandler: function(value) {
             this.$('input').attr('checked', value);
         }
     });
@@ -169,10 +161,10 @@ define([
             'change textarea': 'updateValue',
             'blur textarea': 'updateValue'
         },
-        valueFunction: function () {
+        valueFunction: function() {
             return this.$('textarea').val();
         },
-        valueChangeHandler: function (value) {
+        valueChangeHandler: function(value) {
             this.$('textarea').val(value);
         }
     });
@@ -183,13 +175,13 @@ define([
             'change select': 'updateValue',
             'blur select': 'updateValue'
         },
-        valueFunction: function () {
+        valueFunction: function() {
             return this.$('select').val();
         },
-        valueChangeHandler: function (value) {
+        valueChangeHandler: function(value) {
             this.$('select').val(value);
         },
-        disabledChangeHandler: function (value) {
+        disabledChangeHandler: function(value) {
             this.$el.toggleClass('disabled', value);
             this.$('select').attr('disabled', value);
         }
@@ -201,11 +193,11 @@ define([
             'change input': 'updateValue'
         },
         template: radioListTemplate,
-        valueFunction: function () {
+        valueFunction: function() {
             return this.$('input:checked').val();
         },
-        valueChangeHandler: function (value) {
-            if(value === ""){
+        valueChangeHandler: function(value) {
+            if (value === "") {
                 return;
             }
             //console.log('valueChangeHandler',value,  this.$('input[value=' + value + ']'));
@@ -215,19 +207,19 @@ define([
 
     var CheckListView = InputView.extend({
         template: checkListTemplate,
-        valueFunction: function () {
+        valueFunction: function() {
             var selectedOptions = this.$('input:checked');
 
-            var valueArr = _.map(selectedOptions, function (option) {
+            var valueArr = _.map(selectedOptions, function(option) {
                 return $(option).val();
             });
 
             return valueArr;
         },
-        valueChangeHandler: function (valueArr) {
+        valueChangeHandler: function(valueArr) {
             //this.$('input[value='+value+']').attr('checked',true);
             if (_.isArray(valueArr)) {
-                _.each(valueArr, function (value) {
+                _.each(valueArr, function(value) {
                     this.$('input[value=' + value + ']').attr('checked', true);
                 }, this);
             }
@@ -236,21 +228,21 @@ define([
 
     var HiddenView = ElementView.extend({
         template: '<input type="hidden" value="{{value}}" name="{{name}}" />',
-        valueChangeHandler: function (value) {
+        valueChangeHandler: function(value) {
             this.$('input').val(value);
             this.$('input').trigger('change');
         },
-        valueFunction: function () {
+        valueFunction: function() {
             return '' + this.$('input').val();
         }
     });
 
     var ContainerView = ElementView.extend({
         template: ' ',
-        valueChangeHandler: function (value) {
+        valueChangeHandler: function(value) {
             //this.$('input').val(value);
         },
-        valueFunction: function () {
+        valueFunction: function() {
             //return this.$('input').val();
         }
     });
@@ -258,10 +250,10 @@ define([
 
     var MessageView = ElementView.extend({
         template: messageViewTemplate,
-        valueChangeHandler: function (value) {
+        valueChangeHandler: function(value) {
             this.$('.message').html(value)
         },
-        valueFunction: function () {
+        valueFunction: function() {
             return this.$('.message').html();
         }
     })
@@ -269,21 +261,21 @@ define([
 
     var HiddenJSONView = ElementView.extend({
         template: '<input type="hidden" value="{{value}}" name="{{name}}" />',
-        valueChangeHandler: function (value) {
+        valueChangeHandler: function(value) {
             this.$('input').val(JSON.stringify(value));
             //console.log(value, 'HiddenJSONView');
             this.updateValue();
         },
-        valueFunction: function () {
+        valueFunction: function() {
             return JSON.parse(this.$('input').val());
         }
     });
 
     var CheckboxList = InputView.extend({
-        valueFunction: function () {
+        valueFunction: function() {
             return this.$('input').is(':checked');
         },
-        valueChangeHandler: function (value) {
+        valueChangeHandler: function(value) {
             this.$('input').attr('checked', value);
         }
     });
@@ -302,35 +294,35 @@ define([
         'container': ContainerView
     };
 
-    var getViewByType = function (type) {
+    var getViewByType = function(type) {
         return typeViewIndex[type] || InputView;
     };
 
-    var setViewByType = function (type, View) {
+    var setViewByType = function(type, View) {
         typeViewIndex[type] = View;
     }
 
-    var updateTypeViewIndex = function (indexObj) {
+    var updateTypeViewIndex = function(indexObj) {
         typeViewIndex = _.extend({}, typeViewIndex, indexObj);
     };
 
     var FormModel = Base.Model.extend({
-        constructor: function () {
+        constructor: function() {
             Base.Model.apply(this, arguments);
         },
         defaults: {
             elements: new ElementCollection()
         },
-        setElementAttribute: function (elementName, attribute, value) {
+        setElementAttribute: function(elementName, attribute, value) {
             var elements = this.get('elements');
             elements.get(elementName).set(attribute, value);
         },
-        getValueObject: function () {
+        getValueObject: function() {
             var elements = this.get('elements');
             var errors = this.validateElements();
             var obj = {};
             if (errors.length === 0) {
-                elements.each(function (model) {
+                elements.each(function(model) {
                     if (model.is('active') && model.isNot('skipPost')) {
                         obj[model.id] = model.get('value');
                     }
@@ -340,18 +332,18 @@ define([
             }
             return obj;
         },
-        validateElements: function () {
+        validateElements: function() {
             var elements = this.get('elements');
             var errors = [];
-            elements.each(function (model) {
+            elements.each(function(model) {
                 errors = errors.concat(model.isElementValid());
             });
             return errors;
         },
-        elementsChangeHandler: function () {
+        elementsChangeHandler: function() {
 
             var elements = this.get('elements');
-            elements.on('change', function (model) {
+            elements.on('change', function(model) {
                 var eventName = 'change';
                 var args = Array.prototype.slice.call(arguments, [0]);
                 args[0] = 'elements:' + eventName;
@@ -368,7 +360,7 @@ define([
 
 
     var FormView = Base.View.extend({
-        constructor: function (options) {
+        constructor: function(options) {
             this.typeViewIndex = {};
             Base.View.apply(this, arguments);
         },
@@ -379,19 +371,19 @@ define([
         },
         template: '<div class="form-message-container"></div><form action="{{actionId}}" class="form-vertical" method=""> <div class="group-list"></div> <div class="grp-buttons"> </div> </form>',
 
-        postRender: function () {
+        postRender: function() {
             this.formEl = this.$('form');
             this.renderGroupContainers();
             this.renderMessageStack();
             var model = this.model;
             var elements = model.get('elements');
             this.$el.hide();
-            elements.each(function (elementModel) {
+            elements.each(function(elementModel) {
                 this.addElement(elementModel);
             }, this);
             this.$el.show();
         },
-        addElement: function (model) {
+        addElement: function(model) {
             var attr = model.toJSON();
             var thisView = this;
             var ElementView = this.typeViewIndex[attr.type] || getViewByType(attr.type);
@@ -419,22 +411,22 @@ define([
                 this.$('.' + groupPrefix + group).append(view.el);
             }
         },
-        removeElement: function () {
+        removeElement: function() {
 
         },
-        renderGroupContainers: function () {
+        renderGroupContainers: function() {
             var model = this.model;
             var elements = model.get('elements');
             var groupList = _.unique(elements.pluck('group'));
             var groupListEl = this.$('.group-list');
-            _.each(groupList, function (groupName) {
+            _.each(groupList, function(groupName) {
                 if (this.$('.' + groupPrefix + groupName).length === 0) {
                     groupListEl.append('<div class="' + groupPrefix + groupName + '"></div>');
                 }
             }, this);
         },
 
-        renderMessageStack: function () {
+        renderMessageStack: function() {
             var messageStack = new MessageStack.Model();
             var messageStackView = new MessageStack.View({
                 model: messageStack,
@@ -442,19 +434,19 @@ define([
             });
             messageStackView.render();
 
-            this.on('showMessages', function (messages) {
+            this.on('showMessages', function(messages) {
                 messageStack.removeAllMessages();
-                _.each(messages, function (message) {
+                _.each(messages, function(message) {
                     var messageModel = new MessageStack.Model(message);
                     messageStack.addMessage(messageModel.toJSON());
                 });
             });
 
-            this.on('clearMessages', function (error) {
+            this.on('clearMessages', function(error) {
                 messageStack.removeAllMessages();
             });
         },
-        formSubmitHandler: function (e) {
+        formSubmitHandler: function(e) {
             e.preventDefault();
 
             this.trigger('clearMessages');
@@ -469,27 +461,27 @@ define([
 
             this.trigger('formSubmit', dataObj);
         },
-        addToTypeViewIndex: function (type, View) {
+        addToTypeViewIndex: function(type, View) {
             this.typeViewIndex[type] = View;
         },
-        submitSuccessHandler: function () {
+        submitSuccessHandler: function() {
             console.log(arguments);
         },
-        submitFailureHandler: function (resp, errors) {
-            _.each(errors, function (error) {
+        submitFailureHandler: function(resp, errors) {
+            _.each(errors, function(error) {
                 error.messageType = 'failure';
                 error.expires = 0;
             });
             this.trigger('showMessages', errors);
         },
-        setElementValue: function (name, value) {
+        setElementValue: function(name, value) {
             var elements = this.model.get('elements');
             elements.get(name).set('value', value);
         }
     });
 
 
-    FormView.addToTypeViewIndex = function (type, View) {
+    FormView.addToTypeViewIndex = function(type, View) {
         setViewByType(type, View)
     }
 
