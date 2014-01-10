@@ -27,6 +27,11 @@ define(['base/app', 'base/model', 'base/util'], function(app, BaseModel, util) {
 
 
 
+        },
+        setupView: function() {
+
+        },
+        tearUpView: function() {
 
         },
         postSetup: function() {
@@ -50,10 +55,11 @@ define(['base/app', 'base/model', 'base/util'], function(app, BaseModel, util) {
                 if (_this.removeChildViews) {
                     _this.removeChildViews();
                 }
-                app.getTemplateDef(_this.getTemplate()).done(ifNotRemoved(_this, function(templateFunction) {
+                app.getTemplateDef(_this.getTemplate(), _this.getTemplateType()).done(ifNotRemoved(_this, function(templateFunction) {
                     _this.renderTemplate(templateFunction);
                     setupSubViews(_this);
                     if (_this.setState) {
+                        _this.clearState();
                         var defaultState = _.keys(_this.getOption('states'))[0];
                         _this.setState(_this.getState() || _this.getOption('state') || defaultState);
                     }
@@ -77,7 +83,7 @@ define(['base/app', 'base/model', 'base/util'], function(app, BaseModel, util) {
             if (!_this.rendered) {
                 var metaDef = _this.loadMeta();
                 metaDef.done(ifNotRemoved(_this, metaLoadSuccess));
-            }else {
+            } else {
                 continueRender();
             }
             return _this;
@@ -89,9 +95,8 @@ define(['base/app', 'base/model', 'base/util'], function(app, BaseModel, util) {
 
         },
         renderTemplate: function(templateFunction) {
-            //console.log(this.template, templateFunction(this.model.toJSON()));
-            var useDeepJSON = this.getOption('useDeepJSON');
-            this.$el.html(templateFunction(this.model.toJSON(useDeepJSON)));
+            this.$el.html(templateFunction(this.serialize()));
+
         },
         getOption: function(option) {
             //console.log(this.$el[0],option, this.options[option],this[option]);
@@ -108,6 +113,10 @@ define(['base/app', 'base/model', 'base/util'], function(app, BaseModel, util) {
                 this[methodName] = func;
             }
         },
+        serialize: function() {
+            var useDeepJSON = this.getOption('useDeepJSON');
+            return this.model.toJSON(useDeepJSON);
+        },
         remove: function() {
             this.removeChildViews();
             Backbone.View.prototype.remove.call(this);
@@ -119,11 +128,17 @@ define(['base/app', 'base/model', 'base/util'], function(app, BaseModel, util) {
         removeReferences: function(func) {
             if (func) {
                 this.removeQue.push(func);
-            }else {
+            } else {
                 _.each(this.removeQue, function(func) {
                     func.call(this);
                 });
             }
+        },
+        show:function () {
+            this.$el.show();
+        },
+        hide:function(){
+          this.$el.hide();
         }
     });
 
@@ -136,11 +151,17 @@ define(['base/app', 'base/model', 'base/util'], function(app, BaseModel, util) {
                     oldFunc.apply(this, arguments);
                     func.apply(this, arguments);
                 };
-            }else {
+            } else {
                 throw new Error('Method with name: ' + name + ' doesn\'t exists to deep extend');
             }
         });
     };
+
+    BaseView.templateTypes = {
+        UNDERSCORE: 'underscore',
+        HANDLEBARS: 'handlebars'
+    };
+
 
 
 
@@ -187,10 +208,15 @@ define(['base/app', 'base/model', 'base/util'], function(app, BaseModel, util) {
         };
 
         var renderState = function(StateView) {
+
+            if (context.$('.state-view').length === 0) {
+                throw new Error('Rendering state needs element with class "state-view".');
+            }
+
             statedView = util.createView({
                 View: StateView,
                 model: context.model,
-                parentEl: context.$('.state-view'),
+                parentEl: '.state-view',
                 parentView: context
             });
 
@@ -222,6 +248,11 @@ define(['base/app', 'base/model', 'base/util'], function(app, BaseModel, util) {
             return state;
         };
 
+        context.clearState = function() {
+            cleanUpState();
+            state = undefined;
+        };
+
         context.removeReferences(function() {
             stateConfigs = null;
             state = null;
@@ -244,6 +275,10 @@ define(['base/app', 'base/model', 'base/util'], function(app, BaseModel, util) {
             return template;
         };
 
+        context.getTemplateType = function() {
+            return context.getOption('templateType') || 'Handlebars';
+        };
+
         context.removeReferences(function() {
             template = null;
             context = null;
@@ -255,15 +290,12 @@ define(['base/app', 'base/model', 'base/util'], function(app, BaseModel, util) {
 
         var subViewConfigs = context.getOption('views');
 
-
-
         context.getSubView = function(id) {
             var subView = views[id];
             if (subView) {
                 return subView;
             } else {
-                console.log('No View Defined for id :' + id);
-                //throw new Error();
+                console.error('No View Defined for id :' + id);
             }
         };
 
@@ -295,7 +327,7 @@ define(['base/app', 'base/model', 'base/util'], function(app, BaseModel, util) {
         });
 
         _.each(subViewConfigs, function(viewConfig, viewName) {
-            if(typeof viewConfig === 'function'){
+            if (typeof viewConfig === 'function') {
                 viewConfig = viewConfig.call(context);
             }
             viewConfig.parentView = context;
@@ -309,11 +341,18 @@ define(['base/app', 'base/model', 'base/util'], function(app, BaseModel, util) {
     var setupAttributeWatch = function(context) {
 
         var model = context.model;
+        var preRendered = context.getOption('preRendered');
         if (model) {
-            context.listenToOnce(context, 'rendered', function() {
+            if (!preRendered) {
+                context.listenToOnce(context, 'rendered', function() {
+                    syncAttributes.call(context, model);
+                    context.listenTo(model, 'change', _.bind(watchAttributes, context));
+                });
+            } else {
                 syncAttributes.call(context, model);
                 context.listenTo(model, 'change', _.bind(watchAttributes, context));
-            });
+            }
+
         }
 
     };
@@ -436,8 +475,11 @@ define(['base/app', 'base/model', 'base/util'], function(app, BaseModel, util) {
 
         context.loadMeta = function() {
             if (!context.metaDef) {
-                var def = requestConfigs ? context.addRequest(requestConfigs, ifNotRemoved(context, function(respArray) {
-                   context.metaCache = respArray;
+                var def = requestConfigs ? context.addRequest(requestConfigs, ifNotRemoved(context, function() {
+                    var requestsParser = context.getOption('requestsParser');
+                    if (requestsParser) {
+                        requestsParser.apply(context, arguments);
+                    }
                 })) : $.when({});
                 context.metaDef = def;
             }
@@ -474,6 +516,7 @@ define(['base/app', 'base/model', 'base/util'], function(app, BaseModel, util) {
             context = null;
         });
     };
+
 
     var ifNotRemoved = function(view, fn) {
         return function() {
