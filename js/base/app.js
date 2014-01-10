@@ -1,62 +1,62 @@
-define(['require', 'base/router', 'base/dataLoader', 'base/util', 'base/formatter', 'base/model'], function (require, Router, dataLoader, baseUtil, _formatter_,  BaseModel) {
+define(['require', 'base/router', 'base/dataLoader', 'base/util', 'base/formatter', 'base/model'], function(require, Router, dataLoader, baseUtil, _formatter_, BaseModel) {
 
     var hex_md5 = window.hex_md5;
 
-    function checksum(s)
-    {
+    function checksum(s) {
         var i;
         var chk = 0x12345678;
 
-        var start = 1, end = s.length+1; // to tackle 1 length strings
+        var start = 1,
+            end = s.length + 1; // to tackle 1 length strings
 
         for (i = start; i < end; i++) {
-            chk += (s.charCodeAt(i-1) * i);
+            chk += (s.charCodeAt(i - 1) * i);
         }
 
         return chk;
     }
 
 
-    var getHash = function (key) {
+    var getHash = function(key) {
         //console.log(key, key.toString(), checksum(key.toString()))
         return checksum(key.toString());
         //return 'hash_'+(hashCounter++);
 
     };
 
-    var getTemplateDefByHash = function (hash) {
+    var getTemplateDefByHash = function(hash) {
         return templateIndex[hash];
     };
-    var getRequestDefByHash = function (hash, id) {
-        if(dataIndex[id] && dataIndex[id][hash]){
+    var getRequestDefByHash = function(hash, id) {
+        if (dataIndex[id] && dataIndex[id][hash]) {
             return dataIndex[id][hash];
-        }        
-    };
-    var clearDefById = function ( id) {
-        
-        if(dataIndex[id]){
-            console.log('clearing cache for id', id);
-            delete dataIndex[id];   
         }
-          
+    };
+    var clearDefById = function(id) {
+
+        if (dataIndex[id]) {
+            console.log('clearing cache for id', id);
+            delete dataIndex[id];
+        }
+
     };
 
 
-    var templateIndex = {}, dataIndex = {}, stringIndex={
-        'error.name.req':'Name is Required',
-        'error.displayText.req':'Display Text is Required'
-    };
+    var templateIndex = {}, dataIndex = {}, stringIndex = {
+            'error.name.req': 'Name is Required',
+            'error.displayText.req': 'Display Text is Required'
+        };
 
     var app = {
         root: '/',
         baseUrl: 'js/',
         defaultApp: 'default',
         appBody: '#app-body',
-        compileTemplate: function (str) {
+        compileTemplate: function(str) {
             return Handlebars.compile(str);
         },
         router: new Router(),
-        getTemplateDef: function (template) {
+        getTemplateDef: function(template) {
             var _this = this;
             template = template || '';
             var hash = getHash(template);
@@ -72,7 +72,7 @@ define(['require', 'base/router', 'base/dataLoader', 'base/util', 'base/formatte
                     //if template is an url
                     //console.log(template.indexOf('.html'), template.length - 5);
                     if (/html$/.test(template)) {
-                        require(['text!' + template], function (txt) {
+                        require(['text!' + template], function(txt) {
                             def.resolve(_this.compileTemplate(txt));
                         });
                     } else if (template.indexOf('#') === 0) {
@@ -85,32 +85,32 @@ define(['require', 'base/router', 'base/dataLoader', 'base/util', 'base/formatte
             }
             return def;
         },
-        cacheTemplate: function (def, hash) {
+        cacheTemplate: function(def, hash) {
             templateIndex[hash] = def;
         },
-        cacheData: function (def, hash, id) {
-            if(!dataIndex[id]){
-                dataIndex[id]=[];
+        cacheData: function(def, hash, id) {
+            if (!dataIndex[id]) {
+                dataIndex[id] = [];
             }
             dataIndex[id][hash] = def;
         },
-        log: function () {
+        log: function() {
             console.log.apply(console, arguments);
         },
-        getString: function (str) {
+        getString: function(str) {
             return stringIndex[str] || str;
         },
-        escapeString:function(str){
+        escapeString: function(str) {
             return Handlebars.Utils.escapeExpression(str);
         },
-        responseParser: function (resp) {
+        responseParser: function(resp) {
             return resp;
         },
-        parseFailureResponse: function (resp) {
+        parseFailureResponse: function(resp) {
             return resp;
         },
         appModel: new BaseModel(),
-        getRequestDef: function (config) {
+        getRequestDef: function(config) {
             var _this = this;
 
 
@@ -127,9 +127,9 @@ define(['require', 'base/router', 'base/dataLoader', 'base/util', 'base/formatte
             if (requestConfig.responseParser) {
                 responseParser = requestConfig.responseParser;
             }
-            
-            if(requestConfig.cacheDependencies){
-                _.each(requestConfig.cacheDependencies,function(requestId){
+
+            if (requestConfig.cacheDependencies) {
+                _.each(requestConfig.cacheDependencies, function(requestId) {
                     clearDefById(requestId);
                 });
             }
@@ -140,18 +140,18 @@ define(['require', 'base/router', 'base/dataLoader', 'base/util', 'base/formatte
             var hash = getHash(JSON.stringify(_.pick(config, 'id', 'params')));
 
             //check if given hash already has a request running;
-            var def = getRequestDefByHash(hash,config.id);
+            var def = getRequestDefByHash(hash, config.id);
 
             if (!def) {
                 def = $.Deferred();
-                var request = dataLoader.getRequest(config.id,config.params);
+                var request = dataLoader.getRequest(config.id, config.params);
 
-                request.done(function (resp) {
+                request.done(function(resp) {
 
                     if (resp.errors && resp.errors.length > 0) {
                         def.reject(resp.errors);
                     } else {
-                        if(requestConfig.cache === 'session'){
+                        if (requestConfig.cache === 'session') {
                             _this.cacheData(def, hash, config.id);
                         }
                         var parsedResponse = responseParser(resp);
@@ -159,74 +159,83 @@ define(['require', 'base/router', 'base/dataLoader', 'base/util', 'base/formatte
                     }
                 })
 
-                request.fail(function (resp) {
-                    def.reject({errors:[{errorCode:'network issue', message:'Network failure try again later'}]});
+                request.fail(function(resp) {
+                    def.reject({
+                        errors: [{
+                            errorCode: 'network issue',
+                            message: 'Network failure try again later'
+                        }]
+                    });
                 });
 
             }
             return def;
         },
-        beautifyId: function (s) {
-            s = s.replace(/_([a-z])/g, function (s) {
+        beautifyId: function(s) {
+            s = s.replace(/_([a-z])/g, function(s) {
                 return s.toUpperCase()
             });
 
-            s= s.replace(/_/g,'');
+            s = s.replace(/_/g, '');
 
-            s = s.replace(/([A-Z])/g, function (s) {
+            s = s.replace(/([A-Z])/g, function(s) {
                 return ' ' + s
             });
 
-            return s.replace(/(^.)/g, function (s) {
+            return s.replace(/(^.)/g, function(s) {
                 return s.toUpperCase()
             });
         },
-        getDataIndex: function () {
+        getDataIndex: function() {
             return dataIndex;
         },
-        getTemplateIndex: function () {
+        getTemplateIndex: function() {
             return templateIndex;
         },
-        getFormatted:function(value, format, dataObj){
-            if(typeof format === 'function'){
+        getFormatted: function(value, format, dataObj) {
+            if (typeof format === 'function') {
                 return format.apply(null, arguments);
             }
 
             var formatter = formatterIndex[format];
-            if(formatter){
+            if (formatter) {
                 return formatter(value, dataObj);
-            }else{
+            } else {
                 return value;
             }
 
         },
-        addFormatter:function(type, formatterFunction){
-            if(formatterIndex[type]){
+        addFormatter: function(type, formatterFunction) {
+            if (formatterIndex[type]) {
                 throw new Error('formatter already exist');
-            }else{
+            } else {
                 this.setFormatter.apply(null, arguments);
             }
         },
-        setFormatter:function(type, formatterFunction){
+        setFormatter: function(type, formatterFunction) {
             formatterIndex[type] = formatterFunction;
         },
-        getUrl:function(appId, pageId, params){
-            return '#'+appId+'/'+pageId+'/'+baseUtil.objectToParams(params);
+        getUrl: function(appId, pageId, params) {
+            return '#' + appId + '/' + pageId + '/' + baseUtil.objectToParams(params);
         },
-        navigateToPage:function(appId, pageId, params){
-            app.router.navigate(app.getUrl.apply(app, arguments), {trigger:true});
+        navigateToPage: function(appId, pageId, params) {
+            app.router.navigate(app.getUrl.apply(app, arguments), {
+                trigger: true
+            });
         },
         getHash: getHash,
-        getPageAttributes:function(){
+        getPageAttributes: function() {
             return this.appModel.toJSON();
         },
-        getPageAttribute:function(attributeName){
+        getPageAttribute: function(attributeName) {
             return this.appModel.get(attributeName);
         },
-        updateStringIndex:function(map){
+        updateStringIndex: function(map) {
             _.extend(stringIndex, map);
         }
     };
+
+    _.extend(app, Backbone.Events);
 
 
     var formatterIndex = {
@@ -234,10 +243,20 @@ define(['require', 'base/router', 'base/dataLoader', 'base/util', 'base/formatte
     };
 
 
-    $('body').on('click', '.dummy', function(e){
-        e.preventDefault()
+    $('body').on('click', '.dummy', function(e) {
+        e.preventDefault();
         console.warn('dummy click prevented');
-    })
+    });
+
+    $('body').on('click', function(e) {
+        var target = $(e.target);
+        if (target.parents().index(this) === -1) {
+            if (!target.is(this)) {
+                return;
+            }
+        }
+        app.trigger('bodyClick', e);
+    });
 
     return app;
 
