@@ -85,15 +85,9 @@ define([
 
             var monthViewEl = monthView.$el;
 
-            this.listenTo(app,'bodyClicked',function  (e) {
+            this.listenTo(app,'bodyClick',function  (e) {
                 var target = $(e.target);
-                if (target.parents().index(bodyEl) == -1) {
-                    if (!target.is(bodyEl)) {
-                        return;
-                    }
-                }
-
-                if (target.parents().index(viewEl) == -1) {
+                if (target.parents().index(_this.$el) == -1) {
                     if (monthViewEl.is(":visible")) {
                         monthViewEl.hide();
                     }
@@ -131,7 +125,7 @@ define([
             if (!date.isValid()) {
                 date = moment();
                 this.model.set('value', date.format('L'));
-            };
+            }
             this.$('.dateInput').val(date.format('L'));
         },
         dateChangeHandler: function() {
