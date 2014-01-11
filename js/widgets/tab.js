@@ -5,6 +5,8 @@ define([
     ],
     function(app, Base, SingleSelect) {
 
+        "use strict";
+        
         var baseUtil = Base.util;
 
         var NavItemView = Base.View.extend({
@@ -30,7 +32,7 @@ define([
                     View: Base.CollectionView,
                     collection: items,
                     el: _this.$('.ib-list'),
-                    itemView: NavItemView,
+                    ItemView: NavItemView,
                     parentView:_this
                 });
 
@@ -39,7 +41,7 @@ define([
                     tagName: 'div',
                     collection: items,
                     el: _this.$('.tab-panes'),
-                    itemView: TabItemView,
+                    ItemView: TabItemView,
                     parentView:_this
                 });
 

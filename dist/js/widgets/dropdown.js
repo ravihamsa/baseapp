@@ -1,0 +1,1 @@
+define(["base/app","base","list/singleSelect"],function(e,t,n){var r=t.util,i=n.View.extend({});return{View:i,Model:n.Model}});

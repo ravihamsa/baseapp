@@ -12,7 +12,7 @@ define(['base/view', 'base/itemView', 'base/util'], function(BaseView, BaseItemV
             }
             var index = coll.indexOf(model);
 
-            var ItemView = _this.getOption('itemView') || BaseItemView;
+            var ItemView = _this.getOption('ItemView') || BaseItemView;
             var view = util.createView({model: model, attributes:{'data-id':model.id}, View: ItemView, parentView:_this});
             viewIndex[model.id] = view;
 
