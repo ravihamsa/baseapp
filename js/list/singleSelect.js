@@ -21,7 +21,7 @@ define(['base'], function(Base) {
     var ItemView = Base.View.extend({
         tagName: 'li',
         className: 'single-select-item',
-        template: '<a href="#{{id}}" class="action">{{name}}</a>',
+        template: '<a href="#select" data-id="{{id}}" class="action">{{name}}</a>',
         changeHandler: function() {
             this.render();
             this.$el.toggleClass('active', this.model.is('selected'));
@@ -164,6 +164,8 @@ define(['base'], function(Base) {
                 model.selectFirst();
             }
         };
+
+        updateSelected();
 
     }
 

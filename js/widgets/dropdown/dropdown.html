@@ -1,0 +1,48 @@
+<style>
+	
+	.toggle-body {
+		display: none;
+		position: absolute;
+		background-color: #fff;
+	}
+	.open .toggle-body{
+		display: block;
+	}
+
+	.list-view {
+		border:1px solid #ccc;
+		border-radius: 3px;
+	}
+
+	.list-view {
+		display: inline-block;
+	}
+
+	.list-view a {
+		display: block;
+		padding: 5px;
+	}
+
+	.toggle-but {
+		padding: 5px;
+		border-radius: 3px;
+		border:1px solid #ccc;
+		display: inline-block;
+		padding-right: 30px;
+		position: relative;
+	}
+
+	.down-arrow {
+		font-style: normal;
+		position: absolute;
+		font-size:10px;
+		right: 2px;
+		top: 2px;
+		display: block;
+		padding: 5px;
+	}
+</style>
+<div class="toggle-but"> <div class="summary-view"> </div> <em class="down-arrow">▼</em></div>
+<div class="toggle-body">
+	<div class="list-view"></div>
+</div>

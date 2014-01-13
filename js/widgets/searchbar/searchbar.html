@@ -1,0 +1,40 @@
+<style type="text/css">
+	.search-bar {
+		overflow: hidden;
+		display: inline-block;
+	}
+	.search-bar  .bar{
+		max-width: 50px;
+		overflow: hidden;
+		transition: max-width 200ms ease, left 250ms linear;
+		display: inline-block;
+		white-space: nowrap;
+		border:1px solid #ccc;
+		position: relative;
+		left:0px;
+	}
+
+	.search-bar  .bar input {
+		width:200px;
+		padding: 3px;
+		border:1px solid #ccc;
+		
+	}
+	.search-bar  .bar button {
+		width:50px;
+		padding: 3px;
+		border:1px solid #ccc;
+		border-radius: 3px;
+		box-sizing:border-box;
+		transition:margin-left 200ms;
+	}
+	.open .bar {
+		max-width: 300px;
+	}
+	.open a{
+		/*display: none;*/
+	}
+</style>
+<div class="bar">
+	<a href="#open" class="action btn">search</a><input type="text"> 
+</div>

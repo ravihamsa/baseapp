@@ -48,6 +48,7 @@ js/widgets/table/rowCollection.js
 text!widgets/table/pagination.html
 js/widgets/table/pagination.js
 js/widgets/table.js
+js/widgets/dropdown.js
 js/widgets.js
 
 js/base-list.js
@@ -115,6 +116,7 @@ js/widgets/table/rowCollection.js
 text!widgets/table/pagination.html
 js/widgets/table/pagination.js
 js/widgets/table.js
+js/widgets/dropdown.js
 js/base-list-widgets.js
 js/list/multiSelect.js
 js/list.js
